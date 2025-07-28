@@ -48,7 +48,8 @@ export function getBaseDomain(): string {
 export function getEmailDomain(): string {
   try {
     const baseDomain = getBaseDomain()
-    return baseDomain.startsWith('www.') ? baseDomain.substring(4) : baseDomain
+    // return baseDomain.startsWith('www.') ? baseDomain.substring(4) : baseDomain
+    return 'aitech.io'
   } catch (_e) {
     return isProd ? 'simstudio.ai' : 'localhost:3000'
   }

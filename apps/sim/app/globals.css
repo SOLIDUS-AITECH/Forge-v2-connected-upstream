@@ -98,8 +98,9 @@
     --foreground: 0 0% 98%;
 
     /* Card Colors */
-    --card: 0 0% 9.0%;
+    --card: 0 0% 5.9%;
     --card-foreground: 0 0% 98%;
+
 
     /* Popover Colors */
     --popover: 0 0% 9.0%;
@@ -110,15 +111,15 @@
     --primary-foreground: 0 0% 11.2%;
 
     /* Secondary Colors */
-    --secondary: 0 0% 12.0%;
+    --secondary: 142 77.86% 27.89%;
     --secondary-foreground: 0 0% 98%;
 
     /* Muted Colors */
     --muted: 0 0% 17.5%;
-    --muted-foreground: 0 0% 65.1%;
+    --muted-foreground: 0 0% 100%;
 
     /* Accent Colors */
-    --accent: 0 0% 17.5%;
+    --accent: 142 77.86% 27.89%;
     --accent-foreground: 0 0% 98%;
 
     /* Destructive Colors */
@@ -148,6 +149,10 @@
   }
 }
 
+
+.dark .bg-accent {
+  background-color: hsl(142deg 77.86% 27.89%);
+}
 /* ==========================================================================
    BASE STYLES
    ========================================================================== */
@@ -244,6 +249,12 @@
 
 .dark .bg-red-500 {
   @apply bg-red-700;
+}
+
+
+.dark .border {
+  border-width: 1px;
+  border-color: hsl(142, 91%, 13%);
 }
 
 /* ==========================================================================
