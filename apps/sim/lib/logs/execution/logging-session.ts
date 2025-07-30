@@ -94,7 +94,7 @@ export class LoggingSession {
 
     try {
       const costSummary = calculateCostSummary(traceSpans || [])
-
+      console.log("cost summary")
       await executionLogger.completeWorkflowExecution({
         executionId: this.executionId,
         endedAt: endedAt || new Date().toISOString(),

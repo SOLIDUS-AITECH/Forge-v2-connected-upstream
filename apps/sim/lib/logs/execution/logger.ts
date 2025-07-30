@@ -133,7 +133,7 @@ export class ExecutionLogger implements IExecutionLoggerService {
     traceSpans?: TraceSpan[]
   }): Promise<WorkflowExecutionLog> {
     const { executionId, endedAt, totalDurationMs, costSummary, finalOutput, traceSpans } = params
-
+    logger.info(`Execution ${executionId} cost summary:`, costSummary)
     logger.debug(`Completing workflow execution ${executionId}`)
 
     // Determine if workflow failed by checking trace spans for errors
