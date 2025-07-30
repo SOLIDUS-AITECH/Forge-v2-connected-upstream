@@ -16,7 +16,7 @@ import { useOllamaStore } from '@/stores/ollama/store'
 import type { ToolResponse } from '@/tools/types'
 
 const logger = createLogger('AgentBlock')
-
+console.log("Is hosted? "+isHosted)
 interface AgentResponse extends ToolResponse {
   output: {
     content: string

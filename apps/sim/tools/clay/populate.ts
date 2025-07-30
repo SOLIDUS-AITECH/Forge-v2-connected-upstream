@@ -33,7 +33,7 @@ export const clayPopulateTool: ToolConfig<ClayPopulateParams, ClayPopulateRespon
     url: (params: ClayPopulateParams) => params.webhookURL,
     method: 'POST',
     headers: (params: ClayPopulateParams) => ({
-      'Content-Type': 'application/json',
+      Contenttype: 'application/json',
       Authorization: `Bearer ${params.authToken}`,
     }),
     body: (params: ClayPopulateParams) => ({

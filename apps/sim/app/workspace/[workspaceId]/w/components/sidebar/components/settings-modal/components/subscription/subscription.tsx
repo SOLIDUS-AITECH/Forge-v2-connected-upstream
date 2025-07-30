@@ -91,7 +91,10 @@ export function Subscription({ onOpenChange }: SubscriptionProps) {
           referenceId,
           successUrl: currentUrl,
           cancelUrl: currentUrl,
-          seats: targetPlan === 'team' ? 1 : undefined,
+        };
+        
+        if (targetPlan === 'team') {
+          upgradeParams.seats = 1;
         }
 
         // Add subscriptionId if we have an existing subscription to ensure proper plan switching
@@ -376,9 +379,11 @@ export function Subscription({ onOpenChange }: SubscriptionProps) {
         )}
 
         {subscription.isPro && !subscription.isTeam && (
-          <Button onClick={() => handleUpgrade('team')} className='w-full'>
-            Upgrade to Team - $40/seat/month
-          </Button>
+          // <Button onClick={() => handleUpgrade('team')} className='w-full'>
+          //   Upgrade to Team - $40/seat/month
+          // </Button>
+          <div>
+            </div>
         )}
 
         {subscription.isEnterprise && (

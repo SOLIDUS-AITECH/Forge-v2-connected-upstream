@@ -543,39 +543,59 @@ export function getHostedModels(): string[] {
  * Get an API key for a specific provider, handling rotation and fallbacks
  * For use server-side only
  */
+// export function getApiKey(provider: string, model: string, userProvidedKey?: string): string {
+//   // If user provided a key, use it as a fallback
+//   const hasUserKey = !!userProvidedKey
+
+//   // Use server key rotation for all OpenAI models and Anthropic's Claude models on the hosted platform
+//   const isOpenAIModel = provider === 'openai'
+//   const isClaudeModel = provider === 'anthropic'
+
+//   if (isHosted && (isOpenAIModel || isClaudeModel)) {
+//     try {
+//       // Import the key rotation function
+//       const { getRotatingApiKey } = require('@/lib/utils')
+//       const serverKey = getRotatingApiKey(provider) 
+//       return serverKey
+//     } catch (_error) {
+//       // If server key fails and we have a user key, fallback to that
+//       if (hasUserKey) {
+//         return userProvidedKey!
+//       }
+
+//       // Otherwise, throw an error
+//       throw new Error(`No API key available for ${provider} ${model}`)
+//     }
+//   }
+
+//   // For all other cases, require user-provided key
+//   if (!hasUserKey) {
+//     throw new Error(`API key is required for ${provider} ${model}`)
+//   }
+
+//   return userProvidedKey!
+// }
 export function getApiKey(provider: string, model: string, userProvidedKey?: string): string {
-  // If user provided a key, use it as a fallback
-  const hasUserKey = !!userProvidedKey
+  // 1) If user explicitly pasted their own key, use it:
+  if (userProvidedKey) return userProvidedKey
 
-  // Use server key rotation for all OpenAI models and Anthropic's Claude models on the hosted platform
-  const isOpenAIModel = provider === 'openai'
-  const isClaudeModel = provider === 'anthropic'
-
-  if (isHosted && (isOpenAIModel || isClaudeModel)) {
-    try {
-      // Import the key rotation function
-      const { getRotatingApiKey } = require('@/lib/utils')
-      const serverKey = getRotatingApiKey(provider)
-      return serverKey
-    } catch (_error) {
-      // If server key fails and we have a user key, fallback to that
-      if (hasUserKey) {
-        return userProvidedKey!
+  // 2) Otherwise, pull your own from process.env
+  switch(provider) {
+    case 'openai':
+      if (!process.env.OPENAI_API_KEY) {
+        throw new Error('OPENAI_API_KEY not set in environment')
       }
-
-      // Otherwise, throw an error
-      throw new Error(`No API key available for ${provider} ${model}`)
-    }
+      return process.env.OPENAI_API_KEY
+    case 'anthropic':
+      if (!process.env.ANTHROPIC_API_KEY) {
+        throw new Error('ANTHROPIC_API_KEY not set in environment')
+      }
+      return process.env.ANTHROPIC_API_KEY
+    // …and so on for azure‑openai, etc.
+    default:
+      throw new Error(`No API key logic for provider ${provider}`)
   }
-
-  // For all other cases, require user-provided key
-  if (!hasUserKey) {
-    throw new Error(`API key is required for ${provider} ${model}`)
-  }
-
-  return userProvidedKey!
 }
-
 /**
  * Prepares tool configuration for provider requests with consistent tool usage control behavior
  *

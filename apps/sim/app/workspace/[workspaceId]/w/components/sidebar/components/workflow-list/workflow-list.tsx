@@ -62,7 +62,9 @@ export function WorkflowList({
   const params = useParams()
   const workspaceId = params.workspaceId as string
   const { data: session } = useSession()
-
+  const userId = session?.user?.id
+  // …now you can log it or display it…
+  console.log('My user ID is', userId)
   // Generate skeleton items for loading state
   const skeletonItems = useMemo(() => {
     return Array(4)
