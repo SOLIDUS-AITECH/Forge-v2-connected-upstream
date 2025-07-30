@@ -70,8 +70,8 @@ export default function TermsOfService() {
               <section>
                 <p className='mb-4'>Last Updated: April 20, 2025</p>
                 <p>
-                  Please read these Terms of Service ("Terms") carefully before using the Sim Studio
-                  platform (the "Service") operated by Sim Studio, Inc ("us", "we", or "our").
+                  Please read these Terms of Service ("Terms") carefully before using the Agent Forge
+                  platform (the "Service") operated by Agent Forge, Inc ("us", "we", or "our").
                 </p>
                 <p className='mt-4'>
                   By accessing or using the Service, you agree to be bound by these Terms. If you
@@ -101,13 +101,13 @@ export default function TermsOfService() {
                 <h2 className='mb-4 font-semibold text-2xl text-white'>2. Intellectual Property</h2>
                 <p className='mb-4'>
                   The Service and its original content, features, and functionality are and will
-                  remain the exclusive property of Sim Studio, Inc and its licensors. The Service is
+                  remain the exclusive property of Agent Forge, Inc and its licensors. The Service is
                   protected by copyright, trademark, and other laws of both the United States and
                   foreign countries.
                 </p>
                 <p>
                   Our trademarks and trade dress may not be used in connection with any product or
-                  service without the prior written consent of Sim Studio, Inc.
+                  service without the prior written consent of Agent Forge, Inc.
                 </p>
               </section>
 
@@ -157,7 +157,7 @@ export default function TermsOfService() {
                     solicitation.
                   </li>
                   <li>
-                    To impersonate or attempt to impersonate Sim Studio, Inc, a Sim Studio employee,
+                    To impersonate or attempt to impersonate Agent Forge, Inc, a Agent Forge employee,
                     another user, or any other person or entity.
                   </li>
                   <li>
@@ -166,7 +166,7 @@ export default function TermsOfService() {
                   </li>
                   <li>
                     To engage in any other conduct that restricts or inhibits anyone's use or
-                    enjoyment of the Service, or which, as determined by us, may harm Sim Studio,
+                    enjoyment of the Service, or which, as determined by us, may harm Agent Forge,
                     Inc or users of the Service or expose them to liability.
                   </li>
                 </ul>
@@ -190,7 +190,7 @@ export default function TermsOfService() {
                   6. Limitation of Liability
                 </h2>
                 <p className='mb-4'>
-                  In no event shall Sim Studio, Inc, nor its directors, employees, partners, agents,
+                  In no event shall Agent Forge, Inc, nor its directors, employees, partners, agents,
                   suppliers, or affiliates, be liable for any indirect, incidental, special,
                   consequential or punitive damages, including without limitation, loss of profits,
                   data, use, goodwill, or other intangible losses, resulting from:
@@ -217,7 +217,7 @@ export default function TermsOfService() {
                   or course of performance.
                 </p>
                 <p>
-                  Sim Studio, Inc, its subsidiaries, affiliates, and its licensors do not warrant
+                  Agent Forge, Inc, its subsidiaries, affiliates, and its licensors do not warrant
                   that:
                 </p>
                 <ul className='mb-4 list-disc space-y-2 pl-6 marker:text-[#B5A1D4]'>
@@ -249,7 +249,7 @@ export default function TermsOfService() {
                 <h2 className='mb-4 font-semibold text-2xl text-white'>9. Arbitration Agreement</h2>
                 <p className='mb-4'>
                   Please read the following arbitration agreement carefully. It requires you to
-                  arbitrate disputes with Sim Studio, Inc, its parent companies, subsidiaries,
+                  arbitrate disputes with Agent Forge, Inc, its parent companies, subsidiaries,
                   affiliates, successors and assigns and all of their respective officers,
                   directors, employees, agents, and representatives (collectively, the{' '}
                   <span className='text-[#B5A1D4]'>"Company Parties"</span>) and limits the manner
@@ -269,7 +269,7 @@ export default function TermsOfService() {
                   Arbitration Agreement. The arbitration will be conducted by JAMS, an established
                   alternative dispute resolution provider.
                 </p>
-                <p className='mb-4 border-[#701ffc] border-l-4 bg-[#701ffc]/10 p-3'>
+                <p className='mb-4 border-[#107e38] border-l-4 bg-[#107e38]/10 p-3'>
                   YOU AND COMPANY AGREE THAT EACH OF US MAY BRING CLAIMS AGAINST THE OTHER ONLY ON
                   AN INDIVIDUAL BASIS AND NOT ON A CLASS, REPRESENTATIVE, OR COLLECTIVE BASIS. ONLY
                   INDIVIDUAL RELIEF IS AVAILABLE, AND DISPUTES OF MORE THAN ONE CUSTOMER OR USER
@@ -280,7 +280,7 @@ export default function TermsOfService() {
                   sending a timely written notice of your decision to opt out to:{' '}
                   <Link
                     href='mailto:legal@simstudio.ai'
-                    className='text-[#B5A1D4] hover:text-[#701ffc]'
+                    className='text-[#B5A1D4] hover:text-[#107e38]'
                   >
                     legal@simstudio.ai{' '}
                   </Link>
@@ -334,7 +334,7 @@ export default function TermsOfService() {
                   Our Copyright Agent can be reached at:{' '}
                   <Link
                     href='mailto:copyright@simstudio.ai'
-                    className='text-[#B5A1D4] hover:text-[#701ffc]'
+                    className='text-[#B5A1D4] hover:text-[#107e38]'
                   >
                     copyright@simstudio.ai
                   </Link>
@@ -347,7 +347,7 @@ export default function TermsOfService() {
                   If you have any questions about these Terms, please contact us at:{' '}
                   <Link
                     href='mailto:legal@simstudio.ai'
-                    className='text-[#B5A1D4] hover:text-[#701ffc]'
+                    className='text-[#B5A1D4] hover:text-[#107e38]'
                   >
                     legal@simstudio.ai
                   </Link>

@@ -1,5 +1,5 @@
 /**
- * Sim Studio Telemetry - Server-side Instrumentation
+ * Agent Forge Telemetry - Server-side Instrumentation
  *
  * This file contains all server-side instrumentation logic.
  */

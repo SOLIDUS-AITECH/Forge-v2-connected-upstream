@@ -475,7 +475,7 @@ export default function LoginPage({
 
             <Button
               type='submit'
-              className='flex h-11 w-full items-center justify-center gap-2 bg-[#701ffc] font-medium text-base text-white shadow-[#701ffc]/20 shadow-lg transition-colors duration-200 hover:bg-[#802FFF]'
+              className='flex h-11 w-full items-center justify-center gap-2 bg-[#107e38] font-medium text-base text-white shadow-[#107e38]/20 shadow-lg transition-colors duration-200 hover:bg-[#0e5628]'
               disabled={isLoading}
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
@@ -516,7 +516,7 @@ export default function LoginPage({
                 placeholder='Enter your email'
                 required
                 type='email'
-                className='border-neutral-700/80 bg-neutral-900 text-white placeholder:text-white/60 focus:border-[#802FFF]/70 focus:ring-[#802FFF]/20'
+                className='border-neutral-700/80 bg-neutral-900 text-white placeholder:text-white/60 focus:border-[#0e5628]/70 focus:ring-[#0e5628]/20'
               />
             </div>
             {resetStatus.type && (
@@ -531,7 +531,7 @@ export default function LoginPage({
             <Button
               type='button'
               onClick={handleForgotPassword}
-              className='h-11 w-full bg-[#701ffc] font-medium text-base text-white shadow-[#701ffc]/20 shadow-lg transition-colors duration-200 hover:bg-[#802FFF]'
+              className='h-11 w-full bg-[#107e38] font-medium text-base text-white shadow-[#107e38]/20 shadow-lg transition-colors duration-200 hover:bg-[#0e5628]'
               disabled={isSubmittingReset}
             >
               {isSubmittingReset ? 'Sending...' : 'Send Reset Link'}

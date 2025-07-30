@@ -36,9 +36,7 @@ export function useCollaborativeWorkflow() {
   const workflowStore = useWorkflowStore()
   const subBlockStore = useSubBlockStore()
   const { data: session } = useSession()
-  const userId = session?.user?.id
-  // …now you can log it or display it…
-  console.log('My user ID is', userId)
+
   // Track if we're applying remote changes to avoid infinite loops
   const isApplyingRemoteChange = useRef(false)
 

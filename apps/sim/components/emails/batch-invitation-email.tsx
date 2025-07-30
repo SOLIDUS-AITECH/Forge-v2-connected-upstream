@@ -73,7 +73,7 @@ export const BatchInvitationEmail = ({
               src='https://simstudio.ai/logo.png'
               width='120'
               height='36'
-              alt='Sim Studio'
+              alt='Agent Forge'
               style={logo}
             />
           </Section>
@@ -82,7 +82,7 @@ export const BatchInvitationEmail = ({
 
           <Text style={text}>
             <strong>{inviterName}</strong> has invited you to join{' '}
-            <strong>{organizationName}</strong> on Sim Studio.
+            <strong>{organizationName}</strong> on Agent Forge.
           </Text>
 
           {/* Organization Invitation Details */}

@@ -71,7 +71,7 @@ export default function PrivacyPolicy() {
                 <p className='mb-4'>Last Updated: April 22, 2025</p>
                 <p>
                   This Privacy Policy describes how your personal information is collected, used,
-                  and shared when you visit or use Sim Studio ("the Service", "we", "us", or "our").
+                  and shared when you visit or use Agent Forge ("the Service", "we", "us", or "our").
                 </p>
                 <p className='mt-4'>
                   By using the Service, you agree to the collection and use of information in
@@ -120,7 +120,7 @@ export default function PrivacyPolicy() {
                   </li>
                   <li>
                     <span className='text-[#B5A1D4]'>Company</span> (referred to as either "the
-                    Company", "We", "Us" or "Our" in this Agreement) refers to Sim Studio. For the
+                    Company", "We", "Us" or "Our" in this Agreement) refers to Agent Forge. For the
                     purpose of the GDPR, the Company is the Data Controller.
                   </li>
                   <li>
@@ -191,7 +191,7 @@ export default function PrivacyPolicy() {
                     infrastructure itself (for example, the duration of a page visit).
                   </li>
                   <li>
-                    <span className='text-[#B5A1D4]'>Website</span> refers to Sim Studio, accessible
+                    <span className='text-[#B5A1D4]'>Website</span> refers to Agent Forge, accessible
                     from simstudio.ai
                   </li>
                   <li>
@@ -327,12 +327,12 @@ export default function PrivacyPolicy() {
 
                 <h3 className='mb-2 font-medium text-[#B5A1D4] text-xl'>Legal Requirements</h3>
                 <p className='mb-4'>
-                  Sim Studio may disclose your Personal Information in the good faith belief that
+                  Agent Forge may disclose your Personal Information in the good faith belief that
                   such action is necessary to:
                 </p>
                 <ul className='list-disc space-y-2 pl-6 marker:text-[#B5A1D4]'>
                   <li>To comply with a legal obligation</li>
-                  <li>To protect and defend the rights or property of Sim Studio</li>
+                  <li>To protect and defend the rights or property of Agent Forge</li>
                   <li>
                     To prevent or investigate possible wrongdoing in connection with the Service
                   </li>
@@ -391,7 +391,7 @@ export default function PrivacyPolicy() {
                   Privacy & Terms web page:{' '}
                   <Link
                     href='https://policies.google.com/privacy?hl=en'
-                    className='text-[#B5A1D4] hover:text-[#701ffc]'
+                    className='text-[#B5A1D4] hover:text-[#107e38]'
                     target='_blank'
                     rel='noopener noreferrer'
                   >
@@ -470,7 +470,7 @@ export default function PrivacyPolicy() {
                   11. Information Collected while Using Google APIs
                 </h2>
                 <p className='mb-4'>
-                  Sim Studio's use and transfer to any other app of information received from Google
+                  Agent Forge's use and transfer to any other app of information received from Google
                   APIs will adhere to Google API Services User Data Policy, including the Limited
                   Use requirements.
                 </p>
@@ -530,7 +530,7 @@ export default function PrivacyPolicy() {
                 </h2>
                 <p className='mb-4'>
                   If you are a resident of the European Economic Area (EEA), you have certain data
-                  protection rights. Sim Studio aims to take reasonable steps to allow you to
+                  protection rights. Agent Forge aims to take reasonable steps to allow you to
                   correct, amend, delete, or limit the use of your Personal Information.
                 </p>
                 <p className='mb-4'>
@@ -561,7 +561,7 @@ export default function PrivacyPolicy() {
                   </li>
                   <li>
                     The right to withdraw consent. You also have the right to withdraw your consent
-                    at any time where Sim Studio relied on your consent to process your personal
+                    at any time where Agent Forge relied on your consent to process your personal
                     information.
                   </li>
                 </ul>
@@ -569,7 +569,7 @@ export default function PrivacyPolicy() {
                   Please note that we may ask you to verify your identity before responding to such
                   requests.
                 </p>
-                <p className='mb-4 border-[#701ffc] border-l-4 bg-[#701ffc]/10 p-3'>
+                <p className='mb-4 border-[#107e38] border-l-4 bg-[#107e38]/10 p-3'>
                   You have the right to complain to a Data Protection Authority about our collection
                   and use of your Personal Information. For more information, please contact your
                   local data protection authority in the European Economic Area (EEA).
@@ -601,7 +601,7 @@ export default function PrivacyPolicy() {
                 </h2>
                 <h3 className='mb-2 font-medium text-[#B5A1D4] text-xl'>Introduction</h3>
                 <p className='mb-4'>
-                  Sim Studio is dedicated to preserving data security by preventing unauthorized
+                  Agent Forge is dedicated to preserving data security by preventing unauthorized
                   disclosure of information. This policy was created to provide security researchers
                   with instructions for conducting vulnerability discovery activities and to provide
                   information on how to report vulnerabilities that have been discovered. This
@@ -643,25 +643,25 @@ export default function PrivacyPolicy() {
                 <p className='mb-4'>
                   Security research carried out in conformity with this policy is deemed
                   permissible. We'll work with you to swiftly understand and fix the problem, and
-                  Sim Studio will not suggest or pursue legal action in connection with your study.
+                  Agent Forge will not suggest or pursue legal action in connection with your study.
                 </p>
 
                 <h3 className='mb-2 font-medium text-[#B5A1D4] text-xl'>Scope</h3>
                 <p className='mb-4'>This policy applies to the following systems and services:</p>
                 <ul className='mb-4 list-disc space-y-2 pl-6 marker:text-[#B5A1D4]'>
                   <li>simstudio.ai website</li>
-                  <li>Sim Studio web application</li>
-                  <li>Sim Studio API services</li>
+                  <li>Agent Forge web application</li>
+                  <li>Agent Forge API services</li>
                 </ul>
                 <p className='mb-4'>
                   Any service that isn't explicitly specified above, such as related services, is
                   out of scope and isn't allowed to be tested. Vulnerabilities discovered in
-                  third-party solutions Sim Studio interacts with are not covered by this policy and
+                  third-party solutions Agent Forge interacts with are not covered by this policy and
                   should be reported directly to the solution vendor in accordance with their
                   disclosure policy (if any). Before beginning your inquiry, email us at{' '}
                   <Link
                     href='mailto:security@simstudio.ai'
-                    className='text-[#B5A1D4] hover:text-[#701ffc]'
+                    className='text-[#B5A1D4] hover:text-[#107e38]'
                   >
                     security@simstudio.ai
                   </Link>{' '}
@@ -686,7 +686,7 @@ export default function PrivacyPolicy() {
                   To report any security flaws, send an email to{' '}
                   <Link
                     href='mailto:security@simstudio.ai'
-                    className='text-[#B5A1D4] hover:text-[#701ffc]'
+                    className='text-[#B5A1D4] hover:text-[#107e38]'
                   >
                     security@simstudio.ai
                   </Link>
@@ -726,7 +726,7 @@ export default function PrivacyPolicy() {
                   If you have any questions about this Privacy Policy, please contact us at:{' '}
                   <Link
                     href='mailto:privacy@simstudio.ai'
-                    className='text-[#B5A1D4] hover:text-[#701ffc]'
+                    className='text-[#B5A1D4] hover:text-[#107e38]'
                   >
                     privacy@simstudio.ai
                   </Link>

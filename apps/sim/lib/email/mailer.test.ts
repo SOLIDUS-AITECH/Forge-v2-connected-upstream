@@ -64,7 +64,7 @@ describe('mailer', () => {
 
       // Should call Resend with correct parameters
       expect(mockSend).toHaveBeenCalledWith({
-        from: 'Sim Studio <noreply@simstudio.ai>',
+        from: 'Agent Forge <noreply@simstudio.ai>',
         to: testEmailOptions.to,
         subject: testEmailOptions.subject,
         html: testEmailOptions.html,
@@ -91,7 +91,7 @@ describe('mailer', () => {
 
       // Should call Resend with unsubscribe headers
       expect(mockSend).toHaveBeenCalledWith({
-        from: 'Sim Studio <noreply@simstudio.ai>',
+        from: 'Agent Forge <noreply@simstudio.ai>',
         to: testEmailOptions.to,
         subject: testEmailOptions.subject,
         html: '<p>Test content</p><a href="mock-token-123">Unsubscribe</a>',
@@ -148,7 +148,7 @@ describe('mailer', () => {
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          from: 'Sim Studio <custom@example.com>',
+          from: 'Agent Forge <custom@example.com>',
         })
       )
     })

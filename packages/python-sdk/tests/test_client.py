@@ -1,5 +1,5 @@
 """
-Tests for the Sim Studio Python SDK
+Tests for the Agent Forge Python SDK
 """
 
 import pytest

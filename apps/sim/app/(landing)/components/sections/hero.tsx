@@ -62,7 +62,7 @@ function Hero() {
       <Button
         variant={'secondary'}
         onClick={handleNavigate}
-        className='animate-fade-in items-center bg-[#701ffc] px-7 py-6 font-[420] font-geist-sans text-lg text-neutral-100 tracking-normal shadow-[#701ffc]/30 shadow-lg hover:bg-[#802FFF]'
+        className='animate-fade-in items-center bg-[#107e38] px-7 py-6 font-[420] font-geist-sans text-lg text-neutral-100 tracking-normal shadow-[#107e38]/30 shadow-lg hover:bg-[#0e5628]'
         aria-label='Start using the platform'
       >
         <div className='text-[1.15rem]'>Start now</div>

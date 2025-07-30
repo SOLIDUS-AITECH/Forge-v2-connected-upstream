@@ -1,12 +1,12 @@
 ---
 title: Execution
-description: Understand how workflows are executed in Sim Studio
+description: Understand how workflows are executed in Agent Forge
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout'
 import { Card, Cards } from 'fumadocs-ui/components/card'
 
-Sim Studio's execution engine brings your workflows to life by processing blocks in the correct order, managing data flow, and handling errors gracefully.
+Agent Forge's execution engine brings your workflows to life by processing blocks in the correct order, managing data flow, and handling errors gracefully.
 
 <Callout type="info">
   Every workflow execution follows a deterministic path based on your block connections and logic, ensuring predictable and reliable results.
@@ -21,7 +21,7 @@ Sim Studio's execution engine brings your workflows to life by processing blocks
   </Card>
 
   <Card title="Logging and Cost Calculation" href="/execution/advanced">
-    Understand workflow logs and how execution costs are calculated in Sim Studio
+    Understand workflow logs and how execution costs are calculated in Agent Forge
   </Card>
 </Cards>
 
@@ -56,7 +56,7 @@ Workflows can be executed through multiple channels:
 
 ### Deploy as API
 
-When you deploy a workflow as an API, Sim Studio:
+When you deploy a workflow as an API, Agent Forge:
 - Creates a unique HTTP endpoint: `https://simstudio.ai/api/workflows/{workflowId}/execute`
 - Generates an API key for authentication
 - Accepts POST requests with JSON payloads

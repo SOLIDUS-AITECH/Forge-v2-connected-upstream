@@ -428,7 +428,7 @@ export default function ChatClient({ subdomain }: { subdomain: string }) {
   if (authRequired) {
     // Get title and description from the URL params or use defaults
     const title = new URLSearchParams(window.location.search).get('title') || 'chat'
-    const primaryColor = new URLSearchParams(window.location.search).get('color') || '#802FFF'
+    const primaryColor = new URLSearchParams(window.location.search).get('color') || '#0e5628'
 
     if (authRequired === 'password') {
       return (

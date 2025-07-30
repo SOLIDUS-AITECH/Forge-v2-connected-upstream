@@ -124,7 +124,7 @@ function VerificationForm({
 
             <Button
               onClick={verifyCode}
-              className='h-11 w-full bg-[#701ffc] font-medium text-base text-white shadow-[#701ffc]/20 shadow-lg transition-colors duration-200 hover:bg-[#802FFF]'
+              className='h-11 w-full bg-[#107e38] font-medium text-base text-white shadow-[#107e38]/20 shadow-lg transition-colors duration-200 hover:bg-[#0e5628]'
               disabled={!isOtpComplete || isLoading}
             >
               {isLoading ? 'Verifying...' : 'Verify Email'}

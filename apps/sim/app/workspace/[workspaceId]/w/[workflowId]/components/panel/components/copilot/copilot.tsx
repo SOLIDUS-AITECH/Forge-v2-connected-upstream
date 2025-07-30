@@ -274,7 +274,7 @@ export const Copilot = forwardRef<CopilotRef, CopilotProps>(
                     onClick={() => setShowCheckpoints(!showCheckpoints)}
                     className={`h-8 w-8 p-0 ${
                       showCheckpoints
-                        ? 'bg-[#802FFF]/20 text-[#802FFF] hover:bg-[#802FFF]/30'
+                        ? 'bg-[#0e5628]/20 text-[#0e5628] hover:bg-[#0e5628]/30'
                         : 'hover:bg-accent/50'
                     }`}
                     title='View Checkpoints'
@@ -343,7 +343,7 @@ export const Copilot = forwardRef<CopilotRef, CopilotProps>(
                         onClick={() => setMode('ask')}
                         className={`h-6 flex-1 font-medium text-xs ${
                           mode === 'ask'
-                            ? 'bg-[#802FFF]/20 text-[#802FFF] hover:bg-[#802FFF]/30'
+                            ? 'bg-[#0e5628]/20 text-[#0e5628] hover:bg-[#0e5628]/30'
                             : 'hover:bg-muted/50'
                         }`}
                         title='Ask questions and get answers. Cannot edit workflows.'
@@ -356,7 +356,7 @@ export const Copilot = forwardRef<CopilotRef, CopilotProps>(
                         onClick={() => setMode('agent')}
                         className={`h-6 flex-1 font-medium text-xs ${
                           mode === 'agent'
-                            ? 'bg-[#802FFF]/20 text-[#802FFF] hover:bg-[#802FFF]/30'
+                            ? 'bg-[#0e5628]/20 text-[#0e5628] hover:bg-[#0e5628]/30'
                             : 'hover:bg-muted/50'
                         }`}
                         title='Full agent with workflow editing capabilities.'

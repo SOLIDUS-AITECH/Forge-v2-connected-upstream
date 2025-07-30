@@ -23,6 +23,7 @@ import {
   updateOllamaModels as updateOllamaModelsInDefinitions,
 } from '@/providers/models'
 import { ollamaProvider } from '@/providers/ollama'
+import { sambanovaProvider } from '@/providers/sambanova'
 import { openaiProvider } from '@/providers/openai'
 import type { ProviderConfig, ProviderId, ProviderToolConfig } from '@/providers/types'
 import { xAIProvider } from '@/providers/xai'
@@ -90,6 +91,17 @@ export const providers: Record<
     models: getProviderModelsFromDefinitions('ollama'),
     modelPatterns: PROVIDER_DEFINITIONS.ollama.modelPatterns,
   },
+  sambanova: {
+      ...sambanovaProvider,
+        models: getProviderModelsFromDefinitions('sambanova'),
+      modelPatterns: PROVIDER_DEFINITIONS.sambanova.modelPatterns,
+    }
+}
+
+export function normalizeModelName(model: string): string {
+  const all = getAllModels()        // returns e.g. ['DeepSeek-R1', 'Llama-4-…', …]
+  const match = all.find((m) => m.toLowerCase() === model.toLowerCase())
+  return match ?? model
 }
 
 // Initialize all providers that have initialize method

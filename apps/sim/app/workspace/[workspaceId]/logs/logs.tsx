@@ -458,8 +458,8 @@ export default function Logs() {
               </Tooltip>
 
               <Button
-                className={`group h-9 gap-2 rounded-[11px] border bg-card text-card-foreground shadow-xs transition-all duration-200 hover:border-[#701FFC] hover:bg-[#701FFC] hover:text-white ${
-                  isLive ? 'border-[#701FFC] bg-[#701FFC] text-white' : 'border-border'
+                className={`group h-9 gap-2 rounded-[11px] border bg-card text-card-foreground shadow-xs transition-all duration-200 hover:border-[#107e38] hover:bg-[#107e38] hover:text-white ${
+                  isLive ? 'border-[#107e38] bg-[#107e38] text-white' : 'border-border'
                 }`}
                 onClick={toggleLive}
               >

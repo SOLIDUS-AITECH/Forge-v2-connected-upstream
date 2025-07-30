@@ -1,7 +1,7 @@
 """
-Sim Studio SDK for Python
+Agent Forge SDK for Python
 
-Official Python SDK for Sim Studio, allowing you to execute workflows programmatically.
+Official Python SDK for Agent Forge, allowing you to execute workflows programmatically.
 """
 
 from typing import Any, Dict, Optional
@@ -36,7 +36,7 @@ class WorkflowStatus:
 
 
 class SimStudioError(Exception):
-    """Exception raised for Sim Studio API errors."""
+    """Exception raised for Agent Forge API errors."""
     
     def __init__(self, message: str, code: Optional[str] = None, status: Optional[int] = None):
         super().__init__(message)
@@ -46,11 +46,11 @@ class SimStudioError(Exception):
 
 class SimStudioClient:
     """
-    Sim Studio API client for executing workflows programmatically.
+    Agent Forge API client for executing workflows programmatically.
     
     Args:
-        api_key: Your Sim Studio API key
-        base_url: Base URL for the Sim Studio API (defaults to https://simstudio.ai)
+        api_key: Your Agent Forge API key
+        base_url: Base URL for the Agent Forge API (defaults to https://simstudio.ai)
     """
     
     def __init__(self, api_key: str, base_url: str = "https://simstudio.ai"):

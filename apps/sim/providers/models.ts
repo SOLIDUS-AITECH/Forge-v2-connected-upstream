@@ -18,6 +18,7 @@ import {
   OllamaIcon,
   OpenAIIcon,
   xAIIcon,
+  SambaNovaIcon 
 } from '@/components/icons'
 
 export interface ModelPricing {
@@ -154,6 +155,64 @@ export const PROVIDER_DEFINITIONS: Record<string, ProviderDefinition> = {
       },
     ],
   },
+  sambanova: {
+    id: 'sambanova',
+    name: 'SambaNova',
+    description: "SambaNova's models",
+    defaultModel: 'Meta-Llama-3.3-70B-Instruct',
+    modelPatterns: [/^DeepSeek/, /^Llama-4-Maverick/, /^Meta-Llama-3.3/, /^Qwen3-32B/],
+    icon: SambaNovaIcon,
+    models: [
+      {
+        id: 'DeepSeek-R1-0528',
+        pricing: {
+          input: 5.0,
+          output: 7.0,
+          updatedAt: '2025-07-30',
+        },
+        capabilities: {
+          temperature: { min: 0, max: 2 },
+          toolUsageControl: true,
+        },
+      },
+      {
+        id: 'Llama-4-Maverick-17B-128E-Instruct',
+        pricing: {
+          input: 0.63,
+          output: 1.8,
+          updatedAt: '2025-07-30',
+        },
+        capabilities: {
+          temperature: { min: 0, max: 2 },
+          toolUsageControl: true,
+        },
+      },
+      {
+        id: 'Meta-Llama-3.3-70B-Instruct',
+        pricing: {
+          input: 0.6,
+          output: 1.2,
+          updatedAt: '2025-07-30',
+        },
+        capabilities: {
+          temperature: { min: 0, max: 2 },
+          toolUsageControl: true,
+        },
+      },
+      {
+        id: 'Qwen3-32B',
+        pricing: {
+          input: 0.4,
+          output: 0.8,
+          updatedAt: '2025-07-30',
+        },
+        capabilities: {
+          temperature: { min: 0, max: 2 },
+          toolUsageControl: true,
+        },
+      },
+    ],
+  },  
   'azure-openai': {
     id: 'azure-openai',
     name: 'Azure OpenAI',

@@ -103,7 +103,7 @@
 
 
     /* Popover Colors */
-    --popover: 0 0% 9.0%;
+    --popover: 142 58% 10%;
     --popover-foreground: 0 0% 98%;
 
     /* Primary Colors */
@@ -139,7 +139,7 @@
     /* Workflow Properties */
     --workflow-background: 0 0% 3.9%;
     --workflow-dots: 0 0% 7.5%;
-    --card-background: 0 0% 9.0%;
+    --card-background: 142 58% 10%;
     --card-border: 0 0% 22.7%;
     --card-text: 0 0% 98%;
     --card-hover: 0 0% 12.0%;

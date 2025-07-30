@@ -1,6 +1,7 @@
 import type { StreamingExecution } from '@/executor/types'
 
 export type ProviderId =
+  | 'sambanova'
   | 'openai'
   | 'azure-openai'
   | 'anthropic'
@@ -154,6 +155,8 @@ export interface ProviderRequest {
   // Azure OpenAI specific parameters
   azureEndpoint?: string
   azureApiVersion?: string
+  sambanovaEndpoint?: string
+  sambanovaApiKey?: string
 }
 
 // Map of provider IDs to their configurations

@@ -98,7 +98,7 @@ ${message}
 
     // Send email using Resend
     const { data, error } = await resend.emails.send({
-      from: `Sim Studio <noreply@${getEmailDomain()}>`,
+      from: `Agent Forge <noreply@${getEmailDomain()}>`,
       to: [`help@${getEmailDomain()}`],
       subject: `[${type.toUpperCase()}] ${subject}`,
       replyTo: email,
@@ -121,7 +121,7 @@ ${message}
     // Send confirmation email to the user
     await resend.emails
       .send({
-        from: `Sim Studio <noreply@${getEmailDomain()}>`,
+        from: `Agent Forge <noreply@${getEmailDomain()}>`,
         to: [email],
         subject: `Your ${type} request has been received: ${subject}`,
         text: `
@@ -135,7 +135,7 @@ ${message}
 ${images.length > 0 ? `You attached ${images.length} image(s).` : ''}
 
 Best regards,
-The Sim Studio Team
+The Agent Forge Team
         `,
         replyTo: `help@${getEmailDomain()}`,
       })

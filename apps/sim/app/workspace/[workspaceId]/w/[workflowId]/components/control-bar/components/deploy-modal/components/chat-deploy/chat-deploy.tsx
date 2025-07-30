@@ -522,7 +522,7 @@ export function ChatDeploy({
         title: title.trim(),
         description: description.trim(),
         customizations: {
-          primaryColor: '#802FFF',
+          primaryColor: '#0e5628',
           welcomeMessage: welcomeMessage.trim(),
         },
         authType: authType,

@@ -6,9 +6,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="simstudio-sdk",
     version="0.1.0",
-    author="Sim Studio",
+    author="Agent Forge",
     author_email="support@simstudio.ai",
-    description="Sim Studio SDK - Execute workflows programmatically",
+    description="Agent Forge SDK - Execute workflows programmatically",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/simstudioai/sim",

@@ -27,15 +27,15 @@ const baseUrl = env.NEXT_PUBLIC_APP_URL || 'https://simstudio.ai'
 const getSubjectByType = (type: string, chatTitle?: string) => {
   switch (type) {
     case 'sign-in':
-      return 'Sign in to Sim Studio'
+      return 'Sign in to Agent Forge'
     case 'email-verification':
-      return 'Verify your email for Sim Studio'
+      return 'Verify your email for Agent Forge'
     case 'forget-password':
-      return 'Reset your Sim Studio password'
+      return 'Reset your Agent Forge password'
     case 'chat-access':
       return `Verification code for ${chatTitle || 'Chat'}`
     default:
-      return 'Verification code for Sim Studio'
+      return 'Verification code for Agent Forge'
   }
 }
 
@@ -49,13 +49,13 @@ export const OTPVerificationEmail = ({
   const getMessage = () => {
     switch (type) {
       case 'sign-in':
-        return 'Sign in to Sim Studio'
+        return 'Sign in to Agent Forge'
       case 'forget-password':
-        return 'Reset your password for Sim Studio'
+        return 'Reset your password for Agent Forge'
       case 'chat-access':
         return `Access ${chatTitle || 'the chat'}`
       default:
-        return 'Welcome to Sim Studio'
+        return 'Welcome to Agent Forge'
     }
   }
 
@@ -71,7 +71,7 @@ export const OTPVerificationEmail = ({
                 <Img
                   src={getAssetUrl('static/sim.png')}
                   width='114'
-                  alt='Sim Studio'
+                  alt='Agent Forge'
                   style={{
                     margin: '0 auto',
                   }}
@@ -99,7 +99,7 @@ export const OTPVerificationEmail = ({
             <Text style={baseStyles.paragraph}>
               Best regards,
               <br />
-              The Sim Studio Team
+              The Agent Forge Team
             </Text>
           </Section>
         </Container>

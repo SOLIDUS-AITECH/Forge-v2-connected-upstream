@@ -3,7 +3,7 @@
 @import "fumadocs-ui/css/preset.css";
 
 @theme {
-  --color-fd-primary: #802fff; /* Purple from control-bar component */
+  --color-fd-primary: #0e5628; /* Purple from control-bar component */
 }
 
 /* Custom text highlighting styles */

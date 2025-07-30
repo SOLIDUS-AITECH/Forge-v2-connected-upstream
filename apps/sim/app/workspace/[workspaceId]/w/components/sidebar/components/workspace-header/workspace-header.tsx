@@ -145,7 +145,7 @@ export const WorkspaceHeader = React.memo<WorkspaceHeaderProps>(
     const renderLoadingState = () => (
       <>
         {/* Icon */}
-        <div className='flex h-6 w-6 shrink-0 items-center justify-center rounded bg-[#802FFF]'>
+        <div className='flex h-6 w-6 shrink-0 items-center justify-center rounded bg-[#0e5628]'>
           <AgentIcon className='h-4 w-4 text-white' />
         </div>
 
@@ -190,7 +190,7 @@ export const WorkspaceHeader = React.memo<WorkspaceHeaderProps>(
         {/* Icon - separate from hover area */}
         <Link
           href={workspaceUrl}
-          className='group flex h-6 w-6 shrink-0 items-center justify-center rounded bg-[#802FFF]'
+          className='group flex h-6 w-6 shrink-0 items-center justify-center rounded bg-[#0e5628]'
         >
           <AgentIcon className='h-4 w-4 text-white transition-all group-hover:scale-105' />
         </Link>

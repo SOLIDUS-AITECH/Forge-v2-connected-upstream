@@ -940,8 +940,8 @@ const NavigationItem = ({ item }: NavigationItemProps) => {
       className={cn(
         'h-[42px] w-[42px] rounded-[11px] border bg-card text-card-foreground shadow-xs transition-all duration-200',
         isGrayHover && 'hover:bg-secondary',
-        !isGrayHover && 'hover:border-[#701FFC] hover:bg-[#701FFC] hover:text-white',
-        item.active && 'border-[#701FFC] bg-[#701FFC] text-white'
+        !isGrayHover && 'hover:border-[#107e38] hover:bg-[#107e38] hover:text-white',
+        item.active && 'border-[#107e38] bg-[#107e38] text-white'
       )}
     >
       <item.icon className='h-4 w-4' />

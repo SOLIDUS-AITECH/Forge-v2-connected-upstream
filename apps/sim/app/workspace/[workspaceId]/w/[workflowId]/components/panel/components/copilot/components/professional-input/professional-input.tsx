@@ -78,7 +78,7 @@ const ProfessionalInput: FC<ProfessionalInputProps> = ({
               className={cn(
                 'absolute right-2 bottom-2 h-8 w-8 rounded-xl transition-all',
                 canSubmit
-                  ? 'bg-[#802FFF] text-white shadow-sm hover:bg-[#7028E6]'
+                  ? 'bg-[#0e5628] text-white shadow-sm hover:bg-[#7028E6]'
                   : 'cursor-not-allowed bg-muted text-muted-foreground'
               )}
             >

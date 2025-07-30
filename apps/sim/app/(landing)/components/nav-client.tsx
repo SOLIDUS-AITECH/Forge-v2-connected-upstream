@@ -233,7 +233,7 @@ export default function NavClient({
                     target='_blank'
                     rel='noopener noreferrer'
                   >
-                    <Button className='h-[43px] bg-[#701ffc] px-6 py-2 font-geist-sans font-medium text-base text-neutral-100 transition-colors duration-200 hover:bg-[#802FFF]'>
+                    <Button className='h-[43px] bg-[#107e38] px-6 py-2 font-geist-sans font-medium text-base text-neutral-100 transition-colors duration-200 hover:bg-[#0e5628]'>
                       Contact
                     </Button>
                   </Link>
@@ -299,7 +299,7 @@ export default function NavClient({
                                 target='_blank'
                                 rel='noopener noreferrer'
                               >
-                                <Button className='w-full bg-[#701ffc] py-6 font-medium text-base text-white shadow-[#701ffc]/20 shadow-lg transition-colors duration-200 hover:bg-[#802FFF]'>
+                                <Button className='w-full bg-[#107e38] py-6 font-medium text-base text-white shadow-[#107e38]/20 shadow-lg transition-colors duration-200 hover:bg-[#0e5628]'>
                                   Contact
                                 </Button>
                               </Link>

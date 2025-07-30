@@ -5,6 +5,7 @@ import type { BlockConfig } from '@/blocks/types'
 import {
   getAllModelProviders,
   getBaseModelProviders,
+  getAllModels,
   getHostedModels,
   getProviderIcon,
   MODELS_TEMP_RANGE_0_1,
@@ -59,7 +60,7 @@ export const AgentBlock: BlockConfig<AgentResponse> = {
     'Create powerful AI agents using any LLM provider with customizable system prompts and tool integrations.',
   docsLink: 'https://docs.simstudio.ai/blocks/agent',
   category: 'blocks',
-  bgColor: '#802FFF',
+  bgColor: '#0e5628',
   icon: AgentIcon,
   subBlocks: [
     {
@@ -94,8 +95,8 @@ export const AgentBlock: BlockConfig<AgentResponse> = {
       placeholder: 'Type or select a model...',
       options: () => {
         const ollamaModels = useOllamaStore.getState().models
-        const baseModels = Object.keys(getBaseModelProviders())
-        const allModels = [...baseModels, ...ollamaModels]
+        const staticModels = getAllModels().filter((m) => !ollamaModels.includes(m))
+        const allModels = [...staticModels, ...ollamaModels]
 
         return allModels.map((model) => {
           const icon = getProviderIcon(model)
@@ -155,14 +156,13 @@ export const AgentBlock: BlockConfig<AgentResponse> = {
       placeholder: 'Enter your API key',
       password: true,
       connectionDroppable: false,
-      // Hide API key for all hosted models when running on hosted version
       condition: isHosted
         ? {
             field: 'model',
             value: getHostedModels(),
-            not: true, // Show for all models EXCEPT those listed
+            not: true,
           }
-        : undefined, // Show for all models in non-hosted environments
+        : undefined,
     },
     {
       id: 'azureEndpoint',
@@ -227,17 +227,13 @@ export const AgentBlock: BlockConfig<AgentResponse> = {
         return tool
       },
       params: (params: Record<string, any>) => {
-        // If tools array is provided, handle tool usage control
         if (params.tools && Array.isArray(params.tools)) {
-          // Transform tools to include usageControl
           const transformedTools = params.tools
-            // Filter out tools set to 'none' - they should never be passed to the provider
             .filter((tool: any) => {
               const usageControl = tool.usageControl || 'auto'
               return usageControl !== 'none'
             })
             .map((tool: any) => {
-              // Get the base tool configuration
               const toolConfig = {
                 id:
                   tool.type === 'custom-tool'
@@ -246,13 +242,12 @@ export const AgentBlock: BlockConfig<AgentResponse> = {
                 name: tool.title,
                 description: tool.type === 'custom-tool' ? tool.schema?.function?.description : '',
                 params: tool.params || {},
-                parameters: tool.type === 'custom-tool' ? tool.schema?.function?.parameters : {}, // We'd need to get actual parameters for non-custom tools
+                parameters: tool.type === 'custom-tool' ? tool.schema?.function?.parameters : {},
                 usageControl: tool.usageControl || 'auto',
               }
               return toolConfig
             })
 
-          // Log which tools are being passed and which are filtered out
           const filteredOutTools = params.tools
             .filter((tool: any) => (tool.usageControl || 'auto') === 'none')
             .map((tool: any) => tool.title)
@@ -282,6 +277,8 @@ export const AgentBlock: BlockConfig<AgentResponse> = {
     apiKey: { type: 'string', required: true },
     azureEndpoint: { type: 'string', required: false },
     azureApiVersion: { type: 'string', required: false },
+    sambanovaEndpoint: { type: 'string', required: false },
+    sambanovaApiKey: { type: 'string', required: false },
     responseFormat: {
       type: 'json',
       required: false,

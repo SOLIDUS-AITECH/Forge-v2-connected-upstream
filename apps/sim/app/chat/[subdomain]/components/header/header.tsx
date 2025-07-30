@@ -15,7 +15,7 @@ interface ChatHeaderProps {
 }
 
 export function ChatHeader({ chatConfig, starCount }: ChatHeaderProps) {
-  const primaryColor = chatConfig?.customizations?.primaryColor || '#701FFC'
+  const primaryColor = chatConfig?.customizations?.primaryColor || '#107e38'
 
   return (
     <div className='flex items-center justify-between bg-background/95 px-5 py-3 pt-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6 md:pt-3'>
