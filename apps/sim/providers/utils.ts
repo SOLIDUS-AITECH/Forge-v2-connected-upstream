@@ -598,11 +598,11 @@ export function getApiKey(provider: string, model: string, userProvidedKey?: str
         throw new Error('OPENAI_API_KEY not set in environment')
       }
       return process.env.OPENAI_API_KEY
-    case 'anthropic':
-      if (!process.env.ANTHROPIC_API_KEY) {
-        throw new Error('ANTHROPIC_API_KEY not set in environment')
+    case 'sambanova':
+      if (!process.env.SAMBANOVA_API_KEY) {
+        throw new Error('SAMBANOVA_API_KEY not set in environment')
       }
-      return process.env.ANTHROPIC_API_KEY
+      return process.env.SAMBANOVA_API_KEY
     // …and so on for azure‑openai, etc.
     default:
       throw new Error(`No API key logic for provider ${provider}`)
