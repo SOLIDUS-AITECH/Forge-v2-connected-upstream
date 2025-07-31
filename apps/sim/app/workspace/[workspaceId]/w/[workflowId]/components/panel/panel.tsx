@@ -2,18 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowDownToLine, CircleSlash, X } from 'lucide-react'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui'
-import {
-  Chat,
-  Console,
-  Copilot,
-  Variables,
-} from '@/app/workspace/[workspaceId]/w/[workflowId]/components/panel/components'
-import { ChatModal } from '@/app/workspace/[workspaceId]/w/[workflowId]/components/panel/components/chat/components'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useChatStore } from '@/stores/panel/chat/store'
 import { useConsoleStore } from '@/stores/panel/console/store'
 import { usePanelStore } from '@/stores/panel/store'
 import { useWorkflowRegistry } from '@/stores/workflows/registry/store'
+import { Chat } from './components/chat/chat'
+import { ChatModal } from './components/chat/components/chat-modal/chat-modal'
+import { Console } from './components/console/console'
+import { Copilot } from './components/copilot/copilot'
+import { Variables } from './components/variables/variables'
+import { SidebarChat } from '../../../components/sidebar-chat/sidebar-chat'
+import { useChatType } from '../../../components/chat-utils'
 
 export function Panel() {
   const [chatMessage, setChatMessage] = useState<string>('')
@@ -37,8 +37,9 @@ export function Panel() {
   const clearChat = useChatStore((state) => state.clearChat)
   const exportChatCSV = useChatStore((state) => state.exportChatCSV)
   const { activeWorkflowId } = useWorkflowRegistry()
+  const { shouldUseFloatingChat } = useChatType()
 
-  const handleTabClick = (tab: 'chat' | 'console' | 'variables' | 'copilot') => {
+  const handleTabClick = (tab: 'chat' | 'console' | 'variables' | 'copilot' | 'help') => {
     // Redirect copilot tab clicks to console since copilot is hidden
     if (tab === 'copilot') {
       setActiveTab('console')
@@ -103,7 +104,7 @@ export function Panel() {
       <div className='fixed top-[76px] right-4 z-20 flex h-9 w-[308px] items-center gap-1 rounded-[14px] border bg-card px-[2.5px] py-1 shadow-xs'>
         <button
           onClick={() => handleTabClick('chat')}
-          className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 ${
+          className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 ${
             isOpen && activeTab === 'chat' ? 'panel-tab-active' : 'panel-tab-inactive'
           }`}
         >
@@ -111,29 +112,30 @@ export function Panel() {
         </button>
         <button
           onClick={() => handleTabClick('console')}
-          className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 ${
+          className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 ${
             isOpen && activeTab === 'console' ? 'panel-tab-active' : 'panel-tab-inactive'
           }`}
         >
           Console
         </button>
-        {/* Temporarily hiding copilot tab */}
-        {/* <button
-          onClick={() => handleTabClick('copilot')}
-          className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 ${
-            isOpen && activeTab === 'copilot' ? 'panel-tab-active' : 'panel-tab-inactive'
-          }`}
-        >
-          Copilot
-        </button> */}
         <button
           onClick={() => handleTabClick('variables')}
-          className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 ${
+          className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 ${
             isOpen && activeTab === 'variables' ? 'panel-tab-active' : 'panel-tab-inactive'
           }`}
         >
           Variables
         </button>
+        {!shouldUseFloatingChat && (
+          <button
+            onClick={() => handleTabClick('help')}
+            className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 ${
+              isOpen && activeTab === 'help' ? 'panel-tab-active' : 'panel-tab-inactive'
+            }`}
+          >
+            Help
+          </button>
+        )}
       </div>
 
       {/* Panel Content - Only visible when isOpen is true */}
@@ -231,6 +233,8 @@ export function Panel() {
                 fullscreenInput={copilotMessage}
                 onFullscreenInputChange={setCopilotMessage}
               />
+            ) : activeTab === 'help' ? (
+              <SidebarChat />
             ) : (
               <Variables />
             )}
