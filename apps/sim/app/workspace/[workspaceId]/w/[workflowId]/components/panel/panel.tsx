@@ -132,7 +132,7 @@ export function Panel() {
       {/* Split Chat - Completely separate when shouldUseFloatingChat is true */}
       {isOpen && activeTab === 'chat' && shouldUseFloatingChat && (
         <div className='fixed top-[124px] right-4 bottom-4 z-10' style={{ width: `${panelWidth}px` }}>
-          <SplitChat panelWidth={panelWidth} />
+          <SplitChat panelWidth={panelWidth} onClose={handleClosePanel} />
         </div>
       )}
 

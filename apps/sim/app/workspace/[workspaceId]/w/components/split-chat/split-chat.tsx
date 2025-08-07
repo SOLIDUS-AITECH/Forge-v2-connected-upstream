@@ -19,9 +19,10 @@ type BottomTab = 'agent' | 'rep'
 
 interface SplitChatProps {
   panelWidth: number
+  onClose?: () => void
 }
 
-const SplitChatComponent = function({ panelWidth }: SplitChatProps) {
+const SplitChatComponent = function({ panelWidth, onClose }: SplitChatProps) {
   const [agentMessages, setAgentMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -278,6 +279,7 @@ const SplitChatComponent = function({ panelWidth }: SplitChatProps) {
               <CircleSlash className='h-4 w-4' strokeWidth={2} />
             </button>
             <button 
+              onClick={onClose}
               className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
               style={{ color: 'var(--base-muted-foreground)' }}
             >
