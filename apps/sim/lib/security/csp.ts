@@ -27,17 +27,6 @@ export const cspDirectives: CSPDirectives = {
     "'self'",
     "'unsafe-inline'",
     "'unsafe-eval'",
-<<<<<<< HEAD
-    "https://*.google.com",
-    "https://apis.google.com",
-    "https://*.vercel-scripts.com",
-    "https://*.vercel-insights.com",
-    "https://vercel.live",
-    "https://*.vercel.live",
-    "https://vercel.com",
-    "https://*.vercel.app",
-    "https://vitals.vercel-insights.com",
-=======
     'https://*.google.com',
     'https://apis.google.com',
     'https://*.vercel-scripts.com',
@@ -48,7 +37,6 @@ export const cspDirectives: CSPDirectives = {
     'https://*.vercel.app',
     'https://vitals.vercel-insights.com',
     'https://b2bjsstore.s3.us-west-2.amazonaws.com',
->>>>>>> 8d7f3a50 (fix(domain): add redirects to maintain API routes with old host (#820))
   ],
 
   "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],

@@ -28,22 +28,6 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
     turbopackSourceMaps: false,
   },
-  ...(isDev && {
-    allowedDevOrigins: [
-      ...(env.NEXT_PUBLIC_APP_URL
-        ? (() => {
-            try {
-              return [new URL(env.NEXT_PUBLIC_APP_URL).host]
-            } catch {
-              return []
-            }
-          })()
-        : []),
-      'localhost:3000',
-      'localhost:3001',
-    ],
-    outputFileTracingRoot: path.join(__dirname, '../../'),
-  }),
   transpilePackages: [
     'prettier',
     '@react-email/components',
