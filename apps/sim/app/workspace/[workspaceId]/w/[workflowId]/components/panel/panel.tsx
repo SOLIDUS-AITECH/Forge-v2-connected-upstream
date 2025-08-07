@@ -13,6 +13,7 @@ import { Console } from './components/console/console'
 import { Copilot } from './components/copilot/copilot'
 import { Variables } from './components/variables/variables'
 import { SidebarChat } from '../../../components/sidebar-chat/sidebar-chat'
+import { SplitChat } from '../../../components/split-chat/split-chat'
 import { useChatType } from '../../../components/chat-utils'
 
 export function Panel() {
@@ -126,20 +127,17 @@ export function Panel() {
         >
           Variables
         </button>
-        {!shouldUseFloatingChat && (
-          <button
-            onClick={() => handleTabClick('help')}
-            className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 ${
-              isOpen && activeTab === 'help' ? 'panel-tab-active' : 'panel-tab-inactive'
-            }`}
-          >
-            Help
-          </button>
-        )}
       </div>
 
-      {/* Panel Content - Only visible when isOpen is true */}
-      {isOpen && (
+      {/* Split Chat - Completely separate when shouldUseFloatingChat is true */}
+      {isOpen && activeTab === 'chat' && shouldUseFloatingChat && (
+        <div className='fixed top-[124px] right-4 bottom-4 z-10' style={{ width: `${panelWidth}px` }}>
+          <SplitChat panelWidth={panelWidth} />
+        </div>
+      )}
+
+      {/* Regular Panel Content - Only visible when NOT using split chat */}
+      {isOpen && !(activeTab === 'chat' && shouldUseFloatingChat) && (
         <div
           className='fixed top-[124px] right-4 bottom-4 z-10 flex flex-col rounded-[14px] border bg-card shadow-xs'
           style={{ width: `${panelWidth}px` }}
@@ -150,78 +148,60 @@ export function Panel() {
             onMouseDown={handleResizeStart}
           />
 
-          {/* Header - Fixed width content */}
-          <div className='flex items-center justify-between px-3 pt-3 pb-1'>
-            <h2 className='font-[450] text-base text-card-foreground capitalize'>{activeTab}</h2>
-            <div className='flex items-center gap-2'>
-              {activeTab === 'console' && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => activeWorkflowId && exportConsoleCSV(activeWorkflowId)}
-                      className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
-                      style={{ color: 'var(--base-muted-foreground)' }}
-                    >
-                      <ArrowDownToLine className='h-4 w-4' strokeWidth={2} />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side='bottom'>Export console data</TooltipContent>
-                </Tooltip>
-              )}
-              {activeTab === 'chat' && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => activeWorkflowId && exportChatCSV(activeWorkflowId)}
-                      className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
-                      style={{ color: 'var(--base-muted-foreground)' }}
-                    >
-                      <ArrowDownToLine className='h-4 w-4' strokeWidth={2} />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side='bottom'>Export chat data</TooltipContent>
-                </Tooltip>
-              )}
-              {(activeTab === 'console' || activeTab === 'chat' || activeTab === 'copilot') && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => {
-                        if (activeTab === 'console') {
-                          clearConsole(activeWorkflowId)
-                        } else if (activeTab === 'chat') {
-                          clearChat(activeWorkflowId)
-                        } else if (activeTab === 'copilot') {
-                          copilotRef.current?.clearMessages()
-                        }
-                      }}
-                      className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
-                      style={{ color: 'var(--base-muted-foreground)' }}
-                    >
-                      <CircleSlash className='h-4 w-4' strokeWidth={2} />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side='bottom'>Clear {activeTab}</TooltipContent>
-                </Tooltip>
-              )}
-              <button
-                onClick={handleClosePanel}
-                className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
-                style={{ color: 'var(--base-muted-foreground)' }}
-              >
-                <X className='h-4 w-4' strokeWidth={2} />
-              </button>
+          {/* Header - Only show for non-chat tabs (SidebarChat handles its own header) */}
+          {activeTab !== 'chat' && (
+            <div className='flex items-center justify-between px-3 pt-3 pb-1'>
+              <h2 className='font-[450] text-base text-card-foreground capitalize'>{activeTab}</h2>
+              <div className='flex items-center gap-2'>
+                {activeTab === 'console' && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => activeWorkflowId && exportConsoleCSV(activeWorkflowId)}
+                        className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
+                        style={{ color: 'var(--base-muted-foreground)' }}
+                      >
+                        <ArrowDownToLine className='h-4 w-4' strokeWidth={2} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side='bottom'>Export console data</TooltipContent>
+                  </Tooltip>
+                )}
+                {(activeTab === 'console' || activeTab === 'copilot') && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => {
+                          if (activeTab === 'console') {
+                            clearConsole(activeWorkflowId)
+                          } else if (activeTab === 'copilot') {
+                            copilotRef.current?.clearMessages()
+                          }
+                        }}
+                        className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
+                        style={{ color: 'var(--base-muted-foreground)' }}
+                      >
+                        <CircleSlash className='h-4 w-4' strokeWidth={2} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side='bottom'>Clear {activeTab}</TooltipContent>
+                  </Tooltip>
+                )}
+                <button
+                  onClick={handleClosePanel}
+                  className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
+                  style={{ color: 'var(--base-muted-foreground)' }}
+                >
+                  <X className='h-4 w-4' strokeWidth={2} />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Panel Content Area - Resizable */}
-          <div className='flex-1 overflow-hidden px-3'>
+          <div className={`flex-1 overflow-hidden ${activeTab === 'chat' ? '' : 'px-3'}`}>
             {activeTab === 'chat' ? (
-              <Chat
-                panelWidth={panelWidth}
-                chatMessage={chatMessage}
-                setChatMessage={setChatMessage}
-              />
+              <SidebarChat onClose={handleClosePanel} />
             ) : activeTab === 'console' ? (
               <Console panelWidth={panelWidth} />
             ) : activeTab === 'copilot' ? (
@@ -233,8 +213,6 @@ export function Panel() {
                 fullscreenInput={copilotMessage}
                 onFullscreenInputChange={setCopilotMessage}
               />
-            ) : activeTab === 'help' ? (
-              <SidebarChat />
             ) : (
               <Variables />
             )}

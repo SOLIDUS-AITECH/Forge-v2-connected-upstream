@@ -82,7 +82,7 @@ export const cspDirectives: CSPDirectives = {
     "https://vercel.com",
     "https://*.vercel.app",
     "wss://*.vercel.app",
-    "http://localhost:5050",
+    "https://forgev2-platform.ai.aitech.io/",
   ],
 
   // Google Picker and Drive integration

@@ -28,9 +28,10 @@ interface ChatProps {
   panelWidth: number
   chatMessage: string
   setChatMessage: (message: string) => void
+  hideHeader?: boolean
 }
 
-export function Chat({ panelWidth, chatMessage, setChatMessage }: ChatProps) {
+export function Chat({ panelWidth, chatMessage, setChatMessage, hideHeader = false }: ChatProps) {
   const { activeWorkflowId } = useWorkflowRegistry()
   const {
     messages,
@@ -431,7 +432,7 @@ export function Chat({ panelWidth, chatMessage, setChatMessage }: ChatProps) {
   return (
     <div className='flex h-full flex-col'>
       {/* Output Source Dropdown */}
-      <div className='flex-none py-2'>
+      <div className='flex-none py-2 px-3'>
         <OutputSelect
           workflowId={activeWorkflowId}
           selectedOutputs={selectedOutputs}
@@ -446,12 +447,12 @@ export function Chat({ panelWidth, chatMessage, setChatMessage }: ChatProps) {
         {/* Chat messages section - Scrollable area */}
         <div className='flex-1 overflow-hidden'>
           {workflowMessages.length === 0 ? (
-            <div className='flex h-full items-center justify-center text-muted-foreground text-sm'>
+            <div className='flex h-full items-center justify-center text-muted-foreground text-sm p-3'>
               No messages yet
             </div>
           ) : (
             <ScrollArea className='h-full pb-2' hideScrollbar={true}>
-              <div>
+              <div className='p-3'>
                 {workflowMessages.map((message) => (
                   <ChatMessage key={message.id} message={message} />
                 ))}
@@ -462,7 +463,7 @@ export function Chat({ panelWidth, chatMessage, setChatMessage }: ChatProps) {
         </div>
 
         {/* Input section - Fixed height */}
-        <div className='-mt-[1px] relative flex-nonept-3 pb-4'>
+        <div className='-mt-[1px] relative flex-none pt-3 pb-4 px-3'>
           <div className='flex gap-2'>
             <Input
               ref={inputRef}
