@@ -20,7 +20,7 @@ export interface MistralParserInput {
   includeImageBase64?: boolean
 
   /** Specific pages to process (zero-indexed) */
-  pages?: number[]
+  pages?: string
 
   /** Maximum number of images to extract from the PDF */
   imageLimit?: number

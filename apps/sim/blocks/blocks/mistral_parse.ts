@@ -159,35 +159,9 @@ export const MistralParseBlock: BlockConfig<MistralParserOutput> = {
           parameters.filePath = params.filePath.trim()
         }
 
-        // Convert pages input from string to array of numbers if provided
-        let pagesArray: number[] | undefined
-        if (params.pages && params.pages.trim() !== '') {
-          try {
-            pagesArray = params.pages
-              .split(',')
-              .map((p: string) => p.trim())
-              .filter((p: string) => p.length > 0)
-              .map((p: string) => {
-                const num = Number.parseInt(p, 10)
-                if (Number.isNaN(num) || num < 0) {
-                  throw new Error(`Invalid page number: ${p}`)
-                }
-                return num
-              })
-
-            if (pagesArray && pagesArray.length === 0) {
-              pagesArray = undefined
-            }
-          } catch (error: any) {
-            throw new Error(`Page number format error: ${error.message}`)
-          }
+        if(params.pages) {
+          parameters.pages = params.pages
         }
-
-        // Add optional parameters
-        if (pagesArray && pagesArray.length > 0) {
-          parameters.pages = pagesArray
-        }
-
         return parameters
       },
     },

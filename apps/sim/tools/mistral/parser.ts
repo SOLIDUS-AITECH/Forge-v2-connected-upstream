@@ -185,18 +185,43 @@ export const mistralParserTool: ToolConfig<MistralParserInput, MistralParserOutp
         }
       }
 
+       logger.info("before checking PAGES PARAMS:",typeof params.pages)
+      // Convert pages input from string to array of numbers if provided
+        let pagesArray: number[] | undefined
+        if (params.pages && params.pages.trim() !== '') {
+          try {
+            pagesArray = params.pages
+              .split(',')
+              .map((p: string) => p.trim())
+              .filter((p: string) => p.length > 0)
+              .map((p: string) => {
+                const num = Number.parseInt(p, 10)
+                if (Number.isNaN(num) || num < 0) {
+                  throw new Error(`Invalid page number: ${p}`)
+                }
+                return num
+              })
+
+            if (pagesArray && pagesArray.length === 0) {
+              pagesArray = undefined
+            }
+          } catch (error: any) {
+            throw new Error(`Page number format error: ${error.message}`)
+          }
+        }
+      
       // Page selection - safely handle null and undefined
-      if (params.pages !== undefined && params.pages !== null) {
-        if (Array.isArray(params.pages) && params.pages.length > 0) {
+      if (pagesArray !== undefined && pagesArray !== null) {
+        if (Array.isArray(pagesArray) && pagesArray.length > 0) {
           // Validate all page numbers are non-negative integers
-          const validPages = params.pages.filter(
+          const validPages = pagesArray.filter(
             (page) => typeof page === 'number' && Number.isInteger(page) && page >= 0
           )
-
+          
           if (validPages.length > 0) {
             requestBody.pages = validPages
-
-            if (validPages.length !== params.pages.length) {
+            
+            if (validPages.length !== pagesArray.length) {
               logger.warn(
                 `Some invalid page numbers were removed. Using ${validPages.length} valid pages: ${validPages.join(', ')}`
               )
@@ -204,7 +229,7 @@ export const mistralParserTool: ToolConfig<MistralParserInput, MistralParserOutp
           } else {
             logger.warn('No valid page numbers provided, processing all pages')
           }
-        } else if (Array.isArray(params.pages) && params.pages.length === 0) {
+        } else if (Array.isArray(pagesArray) && pagesArray.length === 0) {
           logger.warn('Empty pages array provided, processing all pages')
         }
       }
