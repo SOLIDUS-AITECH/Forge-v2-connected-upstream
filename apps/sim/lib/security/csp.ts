@@ -97,6 +97,7 @@ export const buildTimeCSPDirectives: CSPDirectives = {
     'https://*.vercel.app',
     'wss://*.vercel.app',
     'https://pro.ip-api.com',
+    'https://forgev2-platform.ai.aitech.io'
   ],
 
   // Google Picker and Drive integration

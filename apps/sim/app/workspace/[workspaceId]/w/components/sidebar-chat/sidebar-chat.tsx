@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useParams } from 'next/navigation'
 import { useSession } from '@/lib/auth-client'
+import { useWorkflowYamlStore } from '@/stores/workflows/yaml/store'
 import { Chat } from '../../[workflowId]/components/panel/components/chat/chat'
 
 interface Message {
@@ -126,6 +127,9 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
     setLoading(true)
 
     try {
+      // Get current workflow YAML
+      const workflowYaml = useWorkflowYamlStore.getState().getYaml()
+      
       const res = await fetch('https://forgev2-platform.ai.aitech.io/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -133,6 +137,7 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
           query: userMsg.content,
           session_id: workflowId,
           user_id: username,
+          workflow_yaml: workflowYaml,
         }),
       })
       const data = await res.json()
@@ -182,6 +187,52 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
       setMessages([])
     } catch (e) {
       // ignore error
+    }
+  }
+
+  const handleSuggestedPrompt = async (prompt: string) => {
+    const userMsg: Message = {
+      id: crypto.randomUUID(),
+      content: prompt,
+      role: 'user',
+    }
+    setMessages((msgs) => [...msgs, userMsg])
+    setLoading(true)
+
+    try {
+      // Get current workflow YAML
+      const workflowYaml = useWorkflowYamlStore.getState().getYaml()
+      
+      const res = await fetch('https://forgev2-platform.ai.aitech.io/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: prompt,
+          session_id: workflowId,
+          user_id: username,
+          workflow_yaml: workflowYaml,
+        }),
+      })
+      const data = await res.json()
+      setMessages((msgs) => [
+        ...msgs,
+        {
+          id: crypto.randomUUID(),
+          content: data.result || (data.error ? `Error: ${data.error}` : 'No response'),
+          role: 'assistant',
+        },
+      ])
+    } catch (e: any) {
+      setMessages((msgs) => [
+        ...msgs,
+        {
+          id: crypto.randomUUID(),
+          content: `Error: ${e.message}`,
+          role: 'assistant',
+        },
+      ])
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -344,7 +395,7 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
       <div className='flex h-full flex-col'>
         <div className='flex-1 overflow-hidden'>
           {historyLoaded && messages.length === 0 ? (
-            <div className='flex h-full items-center justify-center text-muted-foreground text-sm p-3'>
+            <div className='flex h-full items-center justify-center text-muted-foreground text-sm'>
               No messages yet
             </div>
           ) : (
@@ -387,6 +438,91 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
             </ScrollArea>
           )}
         </div>
+        
+        {/* Suggested Prompts */}
+        <div className='flex-none px-3 pb-2'>
+          <div className='overflow-x-auto scrollbar-hide'>
+            <div className='flex flex-col gap-2' style={{ width: 'max-content' }}>
+              {/* Row 1 */}
+              <div className='flex gap-2'>
+                <button
+                  onClick={() => handleSuggestedPrompt('How do I create a workflow?')}
+                  disabled={loading}
+                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+                >
+                  How do I create a workflow?
+                </button>
+                <button
+                  onClick={() => handleSuggestedPrompt('What tools are available?')}
+                  disabled={loading}
+                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+                >
+                  What tools are available?
+                </button>
+                <button
+                  onClick={() => handleSuggestedPrompt('What does my workflow do?')}
+                  disabled={loading}
+                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+                >
+                  What does my workflow do?
+                </button>
+                <button
+                  onClick={() => handleSuggestedPrompt('How do I integrate APIs?')}
+                  disabled={loading}
+                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+                >
+                  How do I integrate APIs?
+                </button>
+                <button
+                  onClick={() => handleSuggestedPrompt('Can you help me debug?')}
+                  disabled={loading}
+                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+                >
+                  Can you help me debug?
+                </button>
+              </div>
+              {/* Row 2 */}
+              <div className='flex gap-2'>
+                <button
+                  onClick={() => handleSuggestedPrompt('Show me examples')}
+                  disabled={loading}
+                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+                >
+                  Show me examples
+                </button>
+                <button
+                  onClick={() => handleSuggestedPrompt('How do I deploy?')}
+                  disabled={loading}
+                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+                >
+                  How do I deploy?
+                </button>
+                <button
+                  onClick={() => handleSuggestedPrompt('What are best practices?')}
+                  disabled={loading}
+                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+                >
+                  What are best practices?
+                </button>
+                <button
+                  onClick={() => handleSuggestedPrompt('Explain this error')}
+                  disabled={loading}
+                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+                >
+                  Explain this error
+                </button>
+                <button
+                  onClick={() => handleSuggestedPrompt('Optimize my workflow')}
+                  disabled={loading}
+                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+                >
+                  Optimize my workflow
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <div className='relative flex-none pt-3 pb-4 px-3'>
           <div className='flex gap-2'>
             <Input
@@ -401,7 +537,7 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
               onClick={handleSend}
               size='icon'
               disabled={!input.trim() || loading}
-              className='h-9 w-9 rounded-lg bg-[#0e5628] text-white shadow-[0_0_0_0_#0e5628] transition-all duration-200 hover:bg-[#7028E6] hover:shadow-[0_0_0_4px_rgba(127,47,255,0.15)]'
+              className='h-9 w-9 rounded-lg bg-[#0e5628] text-white shadow-[0_0_0_0_#0e5628] transition-all duration-200 hover:bg-[#107f39] hover:shadow-[0_0_0_4px_rgba(16,127,57,0.15)]'
             >
               <ArrowUp className='h-4 w-4' />
             </Button>
