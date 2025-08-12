@@ -64,12 +64,23 @@ export interface TypeformResponsesParams {
   since?: string
   until?: string
   completed?: string
+  insights?: boolean
 }
 
 export interface TypeformResponsesResponse extends ToolResponse {
   output: {
     total_items: number
     page_count: number
+    insights: Array<{
+      total_responses: number
+      average_time: number
+      question_stats: Array<{
+        question_id: string
+        answer_count: number
+        answer_types: Record<string, number>
+  }>
+      drop_off_points: Record<string, number>
+    }>
     items: Array<{
       landing_id: string
       token: string

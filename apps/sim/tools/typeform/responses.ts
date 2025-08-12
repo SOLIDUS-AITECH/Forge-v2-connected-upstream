@@ -1,5 +1,6 @@
 import type { TypeformResponsesParams, TypeformResponsesResponse } from '@/tools/typeform/types'
 import type { ToolConfig } from '@/tools/types'
+import { createInsights } from '@/tools/typeform/insightcreation'
 
 export const responsesTool: ToolConfig<TypeformResponsesParams, TypeformResponsesResponse> = {
   id: 'typeform_responses',
@@ -74,7 +75,7 @@ export const responsesTool: ToolConfig<TypeformResponsesParams, TypeformResponse
       'Content-Type': 'application/json',
     }),
   },
-  transformResponse: async (response: Response) => {
+  transformResponse: async (response: Response, params?: TypeformResponsesParams) => {
     if (!response.ok) {
       let errorMessage = response.statusText || 'Unknown error'
 
@@ -96,7 +97,10 @@ export const responsesTool: ToolConfig<TypeformResponsesParams, TypeformResponse
 
     try {
       const data = await response.json()
-
+      if (params?.insights) {
+        const formInsights = createInsights(data)
+        data.insights = formInsights
+      }
       return {
         success: true,
         output: data,

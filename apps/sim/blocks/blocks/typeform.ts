@@ -111,6 +111,13 @@ export const TypeformBlock: BlockConfig<TypeformResponse> = {
       layout: 'half',
       condition: { field: 'operation', value: 'typeform_files' },
     },
+     {
+      id: 'insights',
+      title: 'Create Insights',
+      type: 'switch',
+      layout: 'half',
+      condition: { field: 'operation', value: 'typeform_responses' },
+    },
   ],
   tools: {
     access: ['typeform_responses', 'typeform_files', 'typeform_insights'],
@@ -143,10 +150,12 @@ export const TypeformBlock: BlockConfig<TypeformResponse> = {
     fieldId: { type: 'string', description: 'Field identifier' },
     filename: { type: 'string', description: 'File name' },
     inline: { type: 'boolean', description: 'Inline display option' },
+    insights: { type: 'boolean', description: 'Create insights from responses' },
   },
   outputs: {
     total_items: { type: 'number', description: 'Total response count' },
     page_count: { type: 'number', description: 'Total page count' },
     items: { type: 'json', description: 'Response items' },
+    insights: {type:'json', description: 'Insights data from responses'},
   },
 }
