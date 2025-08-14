@@ -453,6 +453,8 @@ export async function POST(
   const logger = createLogger('WorkflowExecuteAPI')
   logger.info(`[${requestId}] Raw request body: `)
 
+  logger.debug(`[${requestId}] Headers:`, Object.fromEntries(request.headers))
+
   const { id } = await params
   const workflowId = id
 

@@ -25,6 +25,7 @@ export const jiraWriteTool: ToolConfig<JiraWriteParams, JiraWriteResponse> = {
   },
 
   params: {
+    
     accessToken: {
       type: 'string',
       required: true,
@@ -76,9 +77,10 @@ export const jiraWriteTool: ToolConfig<JiraWriteParams, JiraWriteResponse> = {
     },
     issueType: {
       type: 'string',
-      required: true,
-      visibility: 'hidden',
+      required: false,
+      visibility: 'user-or-llm',
       description: 'Type of issue to create (e.g., Task, Story)',
+      default:'Task'
     },
   },
 
@@ -96,6 +98,7 @@ export const jiraWriteTool: ToolConfig<JiraWriteParams, JiraWriteResponse> = {
       if (!domain || !cloudId) {
         throw new Error('Domain and cloudId are required')
       }
+      console.log("[JiraWriteTool] Received issueType param:", params.issueType);
 
       const url = `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/issue`
 
@@ -108,56 +111,58 @@ export const jiraWriteTool: ToolConfig<JiraWriteParams, JiraWriteResponse> = {
       'Content-Type': 'application/json',
     }),
     body: (params) => {
-      // Validate required fields
-      if (!params.projectId) {
-        throw new Error('Project ID is required')
-      }
-      if (!params.summary) {
-        throw new Error('Summary is required')
-      }
-      if (!params.issueType) {
-        throw new Error('Issue type is required')
-      }
+  // Log everything we receive
+  console.log("[JiraWriteTool] Full params:", JSON.stringify(params, null, 2));
 
-      // Construct fields object with only the necessary fields
-      const fields: Record<string, any> = {
-        project: {
-          id: params.projectId,
-        },
-        issuetype: {
-          name: params.issueType,
-        },
-        summary: params.summary, // Use the summary field directly
-      }
+  // Apply defaults
+  const issueTypeName = params.issueType || 'Task';
+  console.log("[JiraWriteTool] Final issueType used:", issueTypeName);
 
-      // Only add description if it exists
-      if (params.description) {
-        fields.description = {
-          type: 'doc',
-          version: 1,
+  // Validate required fields
+  if (!params.projectId) {
+    throw new Error('Project ID is required');
+  }
+  if (!params.summary) {
+    throw new Error('Summary is required');
+  }
+
+  // Construct fields object
+  const fields: Record<string, any> = {
+    project: {
+      id: params.projectId,
+    },
+    issuetype: {
+      name: issueTypeName,
+    },
+    summary: params.summary,
+  };
+
+  // Only add description if it exists
+  if (params.description) {
+    fields.description = {
+      type: 'doc',
+      version: 1,
+      content: [
+        {
+          type: 'paragraph',
           content: [
             {
-              type: 'paragraph',
-              content: [
-                {
-                  type: 'text',
-                  text: params.description,
-                },
-              ],
+              type: 'text',
+              text: params.description,
             },
           ],
-        }
-      }
+        },
+      ],
+    };
+  }
 
-      // Only add parent if it exists
-      if (params.parent) {
-        fields.parent = params.parent
-      }
+  // Only add parent if it exists
+  if (params.parent) {
+    fields.parent = params.parent;
+  }
 
-      const body = { fields }
-      return body
-    },
-  },
+  return { fields };
+},},
 
   transformResponse: async (response: Response, params?: JiraWriteParams) => {
     // Log the response details for debugging

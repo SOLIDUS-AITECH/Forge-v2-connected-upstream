@@ -187,7 +187,13 @@ export class Executor {
     const { setIsExecuting, setIsDebugging, setPendingBlocks, reset } = useExecutionStore.getState()
     const startTime = new Date()
     let finalOutput: NormalizedBlockOutput = {}
-
+    console.log("[WF][Executor] execute called", { workflowId})
+      console.log("[WF][Executor] execute() starting", {
+    workflowId,
+    blocksCount: this.actualWorkflow?.blocks?.length,
+    connectionsCount: this.actualWorkflow?.connections?.length,
+    isDebugging: this.isDebugging
+  })
     // Track workflow execution start
     trackWorkflowTelemetry('workflow_execution_started', {
       workflowId,
@@ -195,10 +201,11 @@ export class Executor {
       connectionCount: this.actualWorkflow.connections.length,
       startTime: startTime.toISOString(),
     })
-
+    console.log("[WF][Executor] validating workflow…")
     this.validateWorkflow(startBlockId)
-
+    console.log("[WF][Executor] creating execution context…")
     const context = this.createExecutionContext(workflowId, startTime, startBlockId)
+    console.log("[WF][Executor] context created", context)
 
     try {
       setIsExecuting(true)
@@ -246,15 +253,23 @@ export class Executor {
           if (nextLayer.length === 0) {
             hasMoreLayers = false
           } else {
+            console.log("[WF][Executor] Executing layer…")
             const outputs = await this.executeLayer(nextLayer, context)
+            console.log("[WF][Executor] Outputs for layer:", outputs)
+            //////////////////////////////////////////////////////////////////////////////////////////
 
             for (const output of outputs) {
+              logger.info("[WF][Executor] Starting outputs loop", { outputsCount: outputs?.length });
               if (
                 output &&
                 typeof output === 'object' &&
                 'stream' in output &&
                 'execution' in output
               ) {
+                logger.debug("[WF][Executor] Processing output", { outputKeys: Object.keys(output) });
+                logger.info("[WF][Executor] Entering streaming handler", {
+  blockId: (output as any)?.execution?.blockId
+});
                 if (context.onStream) {
                   const streamingExec = output as StreamingExecution
                   const [streamForClient, streamForExecutor] = streamingExec.stream.tee()
@@ -295,6 +310,10 @@ export class Executor {
                   try {
                     while (true) {
                       const { done, value } = await reader.read()
+                      logger.debug("[WF][Executor] Stream chunk received", {
+  chunkLength: value?.length,
+  decoded: decoder.decode(value, { stream: true })
+});
                       if (done) break
                       fullContent += decoder.decode(value, { stream: true })
                     }
@@ -313,6 +332,7 @@ export class Executor {
                         // For structured responses, always try to parse the raw streaming content
                         // The streamForExecutor contains the raw JSON response, not the processed display text
                         try {
+                          logger.info("[WF][Executor] Attempting to parse streamed JSON", { blockId });
                           const parsedContent = JSON.parse(fullContent)
                           // Preserve metadata but spread parsed fields at root level (same as manual execution)
                           const structuredOutput = {
@@ -330,6 +350,7 @@ export class Executor {
                             blockLog.output = structuredOutput
                           }
                         } catch (parseError) {
+                          logger.warn("[WF][Executor] Failed to parse streamed JSON", { error: parseError, contentSample: fullContent.slice(0, 200) });
                           // If parsing fails, fall back to setting content
                           blockState.output.content = fullContent
                         }
@@ -390,6 +411,7 @@ export class Executor {
                 }
               }
             }
+            logger.info("[WF][Executor] Finished processing all outputs");
 
             const normalizedOutputs = outputs
               .filter(

@@ -936,7 +936,10 @@ const NavigationItem = ({ item }: NavigationItemProps) => {
   ) : (
     <Button
       variant='outline'
-      onClick={item.onClick}
+      onClick={(e) => {
+    console.log("[WF] Run button clicked", item.id, item);
+    item.onClick?.();
+  }}
       className={cn(
         'h-[42px] w-[42px] rounded-[11px] border bg-card text-card-foreground shadow-xs transition-all duration-200',
         isGrayHover && 'hover:bg-secondary',

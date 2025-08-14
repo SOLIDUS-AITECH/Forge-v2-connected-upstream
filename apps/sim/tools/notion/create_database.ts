@@ -54,51 +54,56 @@ export const notionCreateDatabaseTool: ToolConfig<NotionCreateDatabaseParams, No
       }
     },
     body: (params: NotionCreateDatabaseParams) => {
-      let parsedProperties
+        console.log('[notion_create_database] properties value:', params.properties);
+  console.log('[notion_create_database] properties type:', typeof params.properties);
+  let parsedProperties;
 
-      // Handle properties - use provided JSON or default to Name property
-      if (params.properties?.trim()) {
+  if (params.properties) {
+    if (typeof params.properties === 'string') {
+      // If it's a string, try parsing
+      if (params.properties.trim()) {
         try {
-          parsedProperties = JSON.parse(params.properties)
+          parsedProperties = JSON.parse(params.properties);
         } catch (error) {
           throw new Error(
             `Invalid properties JSON: ${error instanceof Error ? error.message : String(error)}`
-          )
-        }
-      } else {
-        // Default properties with a Name column
-        parsedProperties = {
-          Name: {
-            title: {},
-          },
+          );
         }
       }
+    } else if (typeof params.properties === 'object') {
+      // Already an object, use as-is
+      parsedProperties = params.properties;
+    }
+  }
 
-      // Format parent ID
-      const formattedParentId = params.parentId.replace(
-        /(.{8})(.{4})(.{4})(.{4})(.{12})/,
-        '$1-$2-$3-$4-$5'
-      )
+  // Fallback default
+  if (!parsedProperties) {
+    parsedProperties = {
+      Name: { title: {} }
+    };
+  }
 
-      const body = {
-        parent: {
-          type: 'page_id',
-          page_id: formattedParentId,
-        },
-        title: [
-          {
-            type: 'text',
-            text: {
-              content: params.title,
-            },
-          },
-        ],
-        properties: parsedProperties,
-      }
+  const formattedParentId = params.parentId.replace(
+    /(.{8})(.{4})(.{4})(.{4})(.{12})/,
+    '$1-$2-$3-$4-$5'
+  );
 
-      return body
+  return {
+    parent: {
+      type: 'page_id',
+      page_id: formattedParentId,
     },
-  },
+    title: [
+      {
+        type: 'text',
+        text: {
+          content: params.title,
+        },
+      },
+    ],
+    properties: parsedProperties,
+  };
+}},
 
   transformResponse: async (response: Response) => {
     if (!response.ok) {

@@ -11,6 +11,26 @@ const logger = createLogger('SocketDatabase')
 
 // Create dedicated database connection for socket server with optimized settings
 const connectionString = env.POSTGRES_URL ?? env.DATABASE_URL
+const sqlClient = postgres(connectionString, {
+  prepare: false,
+  idle_timeout: 10,
+  connect_timeout: 20,
+  max: 25,
+  onnotice: () => {},
+  debug: false,
+})
+
+// ✅ Quick connection test
+;(async () => {
+  try {
+    await sqlClient`SELECT 1`
+    logger.info('✅ Postgres connection successful')
+  } catch (err) {
+    logger.error('❌ Postgres connection failed:', err)
+    // Optional: Exit process if DB is critical
+    // process.exit(1)
+  }
+})()
 const socketDb = drizzle(
   postgres(connectionString, {
     prepare: false,

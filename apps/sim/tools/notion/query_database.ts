@@ -65,37 +65,49 @@ export const notionQueryDatabaseTool: ToolConfig<NotionQueryDatabaseParams, Noti
       }
     },
     body: (params: NotionQueryDatabaseParams) => {
-      const body: any = {}
+  const body: any = {};
 
-      // Add filter if provided
-      if (params.filter) {
-        try {
-          body.filter = JSON.parse(params.filter)
-        } catch (error) {
-          throw new Error(
-            `Invalid filter JSON: ${error instanceof Error ? error.message : String(error)}`
-          )
-        }
+  console.log("[notion_query_database] filter value:", params.filter);
+  console.log("[notion_query_database] filter type:", typeof params.filter);
+  console.log("[notion_query_database] sorts value:", params.sorts);
+  console.log("[notion_query_database] sorts type:", typeof params.sorts);
+
+  const parseParam = (label: string, value: unknown) => {
+    if (!value) return undefined;
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return undefined;
+      try {
+        return JSON.parse(trimmed);
+      } catch (err) {
+        throw new Error(
+          `Invalid ${label} JSON: ${err instanceof Error ? err.message : String(err)}`
+        );
       }
+    }
 
-      // Add sorts if provided
-      if (params.sorts) {
-        try {
-          body.sorts = JSON.parse(params.sorts)
-        } catch (error) {
-          throw new Error(
-            `Invalid sorts JSON: ${error instanceof Error ? error.message : String(error)}`
-          )
-        }
-      }
+    if (typeof value === 'object') {
+      return value;
+    }
 
-      // Add page size if provided
-      if (params.pageSize) {
-        body.page_size = Math.min(params.pageSize, 100)
-      }
+    throw new Error(
+      `Invalid ${label} type: expected string or object, got ${typeof value}`
+    );
+  };
 
-      return body
-    },
+  const filterObj = parseParam('filter', params.filter);
+  const sortsObj = parseParam('sorts', params.sorts);
+
+  if (filterObj) body.filter = filterObj;
+  if (sortsObj) body.sorts = sortsObj;
+
+  if (params.pageSize) {
+    body.page_size = Math.min(params.pageSize, 100);
+  }
+
+  return body;
+},
   },
 
   transformResponse: async (response: Response) => {

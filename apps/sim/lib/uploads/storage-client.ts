@@ -178,6 +178,7 @@ export async function getPresignedUrlWithConfig(
  * Get the current storage provider name
  */
 export function getStorageProvider(): 'blob' | 's3' | 'local' {
+  logger.info("Going into getStoragePrvider: Use_S3_Storage:",USE_S3_STORAGE)
   if (USE_BLOB_STORAGE) return 'blob'
   if (USE_S3_STORAGE) return 's3'
   return 'local'
@@ -196,5 +197,6 @@ export function isUsingCloudStorage(): boolean {
 export function getServePathPrefix(): string {
   if (USE_BLOB_STORAGE) return '/api/files/serve/blob/'
   if (USE_S3_STORAGE) return '/api/files/serve/s3/'
+  logger.info("returning to '/api/files/serve/s3/'")
   return '/api/files/serve/'
 }

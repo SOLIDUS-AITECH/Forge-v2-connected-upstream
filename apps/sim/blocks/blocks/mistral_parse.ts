@@ -126,6 +126,7 @@ export const MistralParseBlock: BlockConfig<MistralParserOutput> = {
       tool: () => 'mistral_parser',
       params: (params) => {
         // Basic validation
+        console.log("🔍 Mistral UI params:", params); 
         if (!params || !params.apiKey || params.apiKey.trim() === '') {
           throw new Error('Mistral API key is required')
         }
@@ -145,6 +146,7 @@ export const MistralParseBlock: BlockConfig<MistralParserOutput> = {
             }
             parameters.filePath = params.filePath.trim()
           } else if (inputMethod === 'upload') {
+            console.log("I have entered the inputMethod=upload.")
             if (!params.fileUpload) {
               throw new Error('Please upload a PDF document')
             }
@@ -187,7 +189,7 @@ export const MistralParseBlock: BlockConfig<MistralParserOutput> = {
         if (pagesArray && pagesArray.length > 0) {
           parameters.pages = pagesArray
         }
-
+        console.log("These are the paramters from ui of mistral block:", parameters)
         return parameters
       },
     },

@@ -906,6 +906,28 @@ const WorkflowContent = React.memo(() => {
     router,
     resetVariablesLoaded,
   ])
+// 🔎 DEBUG: what blocks are actually in the store?
+useEffect(() => {
+  const ids = Object.keys(blocks)
+  const types = Object.values(blocks).map(b => ({ id: b.id, type: b.type, name: b.name }))
+  console.log("[WF] Blocks in store:", { count: ids.length, ids, types })
+
+  const mistral = Object.values(blocks).filter(b => b.type === 'mistral_parse')
+  console.log("[WF] mistral_parse present?", mistral.length > 0, mistral)
+}, [blocks])
+useEffect(() => {
+  const blocksArray = Object.values(blocks);
+  const edgesArray = edges;
+
+  console.log("[WF] Blocks in store:", blocksArray.map(b => ({
+    id: b.id, type: b.type, name: b.name, enabled: b.enabled, data: b.data
+  })));
+  console.log("[WF] Edges in store:", edgesArray);
+
+  const starters = blocksArray.filter(b => b.type === "starter" && b.enabled);
+  const mistrals = blocksArray.filter(b => b.type === "mistral_parse" && b.enabled);
+  console.log("[WF] starter(s):", starters.map(b => b.id), "mistral_parse:", mistrals.map(b => b.id));
+}, [blocks, edges]);
 
   // Transform blocks and loops into ReactFlow nodes
   const nodes = useMemo(() => {
@@ -1478,6 +1500,7 @@ const WorkflowContent = React.memo(() => {
   useEffect(() => {
     const handleSubBlockValueUpdate = (event: CustomEvent) => {
       const { blockId, subBlockId, value } = event.detail
+      console.log("[WF] Subblock value update:", { blockId, subBlockId, value })
       if (blockId && subBlockId) {
         // Use collaborative function to go through queue system
         // This ensures 5-second timeout and error detection work
@@ -1486,12 +1509,15 @@ const WorkflowContent = React.memo(() => {
     }
 
     window.addEventListener('update-subblock-value', handleSubBlockValueUpdate as EventListener)
+    console.log("[WF] Subblock value listener attached")
+    
 
     return () => {
       window.removeEventListener(
         'update-subblock-value',
         handleSubBlockValueUpdate as EventListener
       )
+      console.log("[WF] Subblock value listener detached")
     }
   }, [collaborativeSetSubblockValue])
 

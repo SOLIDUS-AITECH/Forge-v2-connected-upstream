@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises'
 import type { NextRequest, NextResponse } from 'next/server'
 import { createLogger } from '@/lib/logs/console/logger'
-import { downloadFile, getStorageProvider, isUsingCloudStorage } from '@/lib/uploads'
+import { downloadFile, getStorageProvider, isUsingCloudStorage, S3Client } from '@/lib/uploads'
 import { BLOB_KB_CONFIG, S3_KB_CONFIG } from '@/lib/uploads/setup'
 import '@/lib/uploads/setup.server'
 
@@ -37,6 +37,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
+  logger.info('RUN: GET handler');
   try {
     const { path } = await params
 
@@ -63,6 +64,7 @@ export async function GET(
 
     // Use local handler for local files
     return await handleLocalFile(fullPath)
+
   } catch (error) {
     logger.error('Error serving file:', error)
 
@@ -78,6 +80,7 @@ export async function GET(
  * Handle local file serving
  */
 async function handleLocalFile(filename: string): Promise<NextResponse> {
+  logger.info('RUN: handleLocalFile', filename);
   try {
     const filePath = findLocalFile(filename)
 
@@ -100,6 +103,7 @@ async function handleLocalFile(filename: string): Promise<NextResponse> {
 }
 
 async function downloadKBFile(cloudKey: string): Promise<Buffer> {
+  logger.info('RUN: downloadKBFile', cloudKey);
   const storageProvider = getStorageProvider()
 
   if (storageProvider === 'blob') {
@@ -130,6 +134,7 @@ async function downloadKBFile(cloudKey: string): Promise<Buffer> {
       Bucket: S3_KB_CONFIG.bucket,
       Key: cloudKey,
     })
+    logger.info("Using S3 client instance:", s3Client)
 
     const response = await s3Client.send(command)
     if (!response.Body) {
@@ -153,6 +158,7 @@ async function downloadKBFile(cloudKey: string): Promise<Buffer> {
  * Proxy cloud file through our server
  */
 async function handleCloudProxy(cloudKey: string): Promise<NextResponse> {
+  logger.info('RUN: handleCloudProxy', cloudKey);
   try {
     // Check if this is a KB file (starts with 'kb/')
     const isKBFile = cloudKey.startsWith('kb/')

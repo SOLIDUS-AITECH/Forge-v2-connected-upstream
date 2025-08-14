@@ -244,6 +244,12 @@ export function useWorkflowExecution() {
 
   const handleRunWorkflow = useCallback(
     async (workflowInput?: any, enableDebug = false) => {
+      console.log("[WF][UI] handleRunWorkflow START", {
+      workflowInput,
+      enableDebug,
+      activeWorkflowId
+    })
+
       if (!activeWorkflowId) return
 
       // Reset execution result and set execution state
@@ -397,7 +403,14 @@ export function useWorkflowExecution() {
       // For manual (non-chat) execution
       const executionId = uuidv4()
       try {
+        console.log("[WF][UI] Calling executeWorkflow", {
+  executionId,
+  workflowInput,
+  activeWorkflowId,
+  blocks, // if accessible
+})
         const result = await executeWorkflow(workflowInput, undefined, executionId)
+        console.log("[WF][UI] executeWorkflow returned:", result)
         if (result && 'metadata' in result && result.metadata?.isDebugSession) {
           setDebugContext(result.metadata.context || null)
           if (result.metadata.pendingBlocks) {
@@ -455,8 +468,16 @@ export function useWorkflowExecution() {
     onStream?: (se: StreamingExecution) => Promise<void>,
     executionId?: string
   ): Promise<ExecutionResult | StreamingExecution> => {
+    console.log("[WF][UI] executeWorkflow CALLED", {
+    workflowInput,
+    executionId,
+    blocksCount: blocks?.length,
+    blocks
+  })
+  
     // Use the mergeSubblockState utility to get all block states
     const mergedStates = mergeSubblockState(blocks)
+    console.log("[WF][UI] mergedStates", mergedStates)
 
     // Filter out trigger blocks for manual execution
     const filteredStates = Object.entries(mergedStates).reduce(
@@ -472,7 +493,8 @@ export function useWorkflowExecution() {
       },
       {} as typeof mergedStates
     )
-
+    console.log("[WF][UI] filteredStates (no triggers)", filteredStates)
+    
     const currentBlockStates = Object.entries(filteredStates).reduce(
       (acc, [id, block]) => {
         acc[id] = Object.entries(block.subBlocks).reduce(
@@ -516,6 +538,13 @@ export function useWorkflowExecution() {
     const filteredEdges = edges.filter(
       (edge) => !triggerBlockIds.includes(edge.source) && !triggerBlockIds.includes(edge.target)
     )
+    console.log("[WF][UI] Preparing payload for backend", {
+  currentBlockStates,
+  envVarValues,
+  workflowVariables,
+  filteredEdges,
+  activeWorkflowId
+})
 
     // Create serialized workflow with filtered blocks and edges
     const workflow = new Serializer().serializeWorkflow(
@@ -556,11 +585,15 @@ export function useWorkflowExecution() {
         executionId,
       },
     }
-
+    console.log("[WF][Hook] Creating Executor", executorOptions)
     // Create executor and store in global state
     const newExecutor = new Executor(executorOptions)
     setExecutor(newExecutor)
-
+    console.log("[WF][UI] Starting local execution with Executor", {
+  workflow,
+  executorOptions,
+});
+console.log("[WF][Hook] Calling executor.execute()")
     // Execute workflow
     return newExecutor.execute(activeWorkflowId || '')
   }

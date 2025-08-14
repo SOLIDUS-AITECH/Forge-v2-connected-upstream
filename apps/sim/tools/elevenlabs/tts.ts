@@ -40,15 +40,18 @@ export const elevenLabsTtsTool: ToolConfig<ElevenLabsTtsParams, ElevenLabsTtsRes
   request: {
     url: '/api/proxy/tts',
     method: 'POST',
-    headers: (params) => ({
+    headers: () => ({
       'Content-Type': 'application/json',
     }),
-    body: (params) => ({
-      apiKey: params.apiKey,
-      text: params.text,
-      voiceId: params.voiceId,
-      modelId: params.modelId || 'eleven_monolingual_v1',
-    }),
+    body: (params) => {
+      logger.info('ElevenLabs TTS Tool request params', params)
+      return {
+        apiKey: params.apiKey,
+        text: params.text,
+        voiceId: params.voiceId,
+        modelId: params.modelId || 'eleven_monolingual_v1',
+      }
+    },
     isInternalRoute: true,
   },
 
