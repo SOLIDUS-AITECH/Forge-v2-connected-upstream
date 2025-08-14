@@ -416,7 +416,7 @@ export function TemplateCard({
                   'shadow-[0_0_0_0_#107e38] hover:shadow-[0_0_0_4px_rgba(127,47,255,0.15)]'
                 )}
               >
-                Use
+                Subscribe
               </button>
             </div>
           </div>

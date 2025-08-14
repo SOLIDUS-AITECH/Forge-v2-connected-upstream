@@ -130,10 +130,8 @@ function Hero() {
       </div>
 
       <div className='animation-container relative z-20 space-y-4 px-4 text-center'>
-        <h1 className='animation-container animate-fade-up font-semibold text-[42px] leading-[1.10] opacity-0 will-change-[opacity,transform] [animation-delay:200ms] md:text-[68px]'>
-          Build / Deploy
-          <br />
-          Agent Workflows
+        <h1 className='animation-container animate-fade-up font-semibold text-[42px] leading-[1.50] opacity-0 will-change-[opacity,transform] [animation-delay:200ms] md:text-[68px]'>
+          Forge v2
         </h1>
 
         <p className='animation-container mx-auto max-w-3xl animate-fade-up font-normal text-base text-neutral-400/80 leading-[1.5] tracking-normal opacity-0 will-change-[opacity,transform] [animation-delay:400ms] md:text-xl'>

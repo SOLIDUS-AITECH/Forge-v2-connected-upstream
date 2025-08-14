@@ -385,10 +385,10 @@ export function getInvalidCharacters(name: string): string[] {
  * - Otherwise falls back to local static assets served from root path
  */
 export function getAssetUrl(filename: string) {
-  const cdnBaseUrl = env.NEXT_PUBLIC_BLOB_BASE_URL
-  if (cdnBaseUrl) {
-    return `${cdnBaseUrl}/${filename}`
-  }
+  // const cdnBaseUrl = env.NEXT_PUBLIC_BLOB_BASE_URL
+  // if (cdnBaseUrl) {
+  //   return `${cdnBaseUrl}/${filename}`
+  // }
   return `/${filename}`
 }
 

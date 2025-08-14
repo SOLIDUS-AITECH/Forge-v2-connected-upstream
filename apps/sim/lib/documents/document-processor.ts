@@ -8,7 +8,11 @@ import { BLOB_KB_CONFIG, S3_KB_CONFIG } from '@/lib/uploads/setup'
 import { mistralParserTool } from '@/tools/mistral/parser'
 
 const logger = createLogger('DocumentProcessor')
-
+function tryExtractServeKey(url: string): string | null {
+  // Matches: /api/files/serve/s3/<encodedKey>  or  /api/files/serve/blob/<encodedKey>
+  const m = url.match(/^\/api\/files\/serve\/(s3|blob)\/(.+)$/)
+  return m ? decodeURIComponent(m[2]) : null
+}
 // Timeout constants (in milliseconds)
 const TIMEOUTS = {
   FILE_DOWNLOAD: 60000, // 60 seconds
@@ -142,6 +146,7 @@ async function parseDocument(
 /**
  * Parse document using Mistral OCR
  */
+// Replace your current parseWithMistralOCR with this version
 async function parseWithMistralOCR(
   fileUrl: string,
   filename: string,
@@ -159,66 +164,76 @@ async function parseWithMistralOCR(
   let httpsUrl = fileUrl
   let cloudUrl: string | undefined
 
-  // If the URL is not HTTPS, we need to upload to cloud storage first
+  // Fast path: if it's already an https URL, use it as-is
   if (!fileUrl.startsWith('https://')) {
-    logger.info(`Uploading "${filename}" to cloud storage for Mistral OCR access`)
-
-    // Download the file content with timeout
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUTS.FILE_DOWNLOAD)
-
-    try {
-      const response = await fetch(fileUrl, { signal: controller.signal })
-      clearTimeout(timeoutId)
-
-      if (!response.ok) {
-        throw new Error(`Failed to download file for cloud upload: ${response.statusText}`)
-      }
-
-      const buffer = Buffer.from(await response.arrayBuffer())
-
-      // Always upload to cloud storage for Mistral OCR, even in development
+    // If this is our serve route (e.g. /api/files/serve/s3/<key>), presign directly (no re-upload)
+    const keyFromServe = tryExtractServeKey(fileUrl)
+    if (keyFromServe) {
       const kbConfig = getKBConfig()
-      const provider = getStorageProvider()
+      httpsUrl = await getPresignedUrlWithConfig(keyFromServe, kbConfig as any, 900) // 15 min
+      cloudUrl = httpsUrl
+    } else {
+      // Otherwise fall back to the existing upload flow
+      logger.info(`Uploading "${filename}" to cloud storage for Mistral OCR access`)
 
-      if (provider === 'blob') {
-        const blobConfig = kbConfig as BlobConfig
-        if (
-          !blobConfig.containerName ||
-          (!blobConfig.connectionString && (!blobConfig.accountName || !blobConfig.accountKey))
-        ) {
-          throw new Error(
-            'Azure Blob configuration missing for PDF processing with Mistral OCR. Set AZURE_CONNECTION_STRING or both AZURE_ACCOUNT_NAME + AZURE_ACCOUNT_KEY, and AZURE_KB_CONTAINER_NAME.'
-          )
-        }
-      } else {
-        const s3Config = kbConfig as S3Config
-        if (!s3Config.bucket || !s3Config.region) {
-          throw new Error(
-            'S3 configuration missing for PDF processing with Mistral OCR. Set AWS_REGION and S3_KB_BUCKET_NAME environment variables.'
-          )
-        }
-      }
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), TIMEOUTS.FILE_DOWNLOAD)
 
       try {
-        // Upload to cloud storage
-        const cloudResult = await uploadFile(buffer, filename, mimeType, kbConfig as any)
-        // Generate presigned URL with 15 minutes expiration
-        httpsUrl = await getPresignedUrlWithConfig(cloudResult.key, kbConfig as any, 900)
-        cloudUrl = httpsUrl
-        logger.info(`Successfully uploaded to cloud storage for Mistral OCR: ${cloudResult.key}`)
-      } catch (uploadError) {
-        logger.error('Failed to upload to cloud storage for Mistral OCR:', uploadError)
-        throw new Error(
-          `Cloud upload failed: ${uploadError instanceof Error ? uploadError.message : 'Unknown error'}. Cloud upload is required for PDF processing with Mistral OCR.`
-        )
+        // NOTE: Non-absolute URLs will fail here, so we only get here when it's neither https nor our serve route.
+        const response = await fetch(fileUrl, { signal: controller.signal })
+        clearTimeout(timeoutId)
+
+        if (!response.ok) {
+          throw new Error(`Failed to download file for cloud upload: ${response.statusText}`)
+        }
+
+        const buffer = Buffer.from(await response.arrayBuffer())
+
+        // Always upload to cloud storage for Mistral OCR, even in development
+        const kbConfig = getKBConfig()
+        const provider = getStorageProvider()
+
+        if (provider === 'blob') {
+          const blobConfig = kbConfig as BlobConfig
+          if (
+            !blobConfig.containerName ||
+            (!blobConfig.connectionString && (!blobConfig.accountName || !blobConfig.accountKey))
+          ) {
+            throw new Error(
+              'Azure Blob configuration missing for PDF processing with Mistral OCR. Set AZURE_CONNECTION_STRING or both AZURE_ACCOUNT_NAME + AZURE_ACCOUNT_KEY, and AZURE_KB_CONTAINER_NAME.'
+            )
+          }
+        } else {
+          const s3Config = kbConfig as S3Config
+          if (!s3Config.bucket || !s3Config.region) {
+            throw new Error(
+              'S3 configuration missing for PDF processing with Mistral OCR. Set AWS_REGION and S3_KB_BUCKET_NAME environment variables.'
+            )
+          }
+        }
+
+        // Upload and then presign
+        try {
+          const cloudResult = await uploadFile(buffer, filename, mimeType, kbConfig as any)
+          httpsUrl = await getPresignedUrlWithConfig(cloudResult.key, kbConfig as any, 900)
+          cloudUrl = httpsUrl
+          logger.info(`Successfully uploaded to cloud storage for Mistral OCR: ${cloudResult.key}`)
+        } catch (uploadError) {
+          logger.error('Failed to upload to cloud storage for Mistral OCR:', uploadError)
+          throw new Error(
+            `Cloud upload failed: ${
+              uploadError instanceof Error ? uploadError.message : 'Unknown error'
+            }. Cloud upload is required for PDF processing with Mistral OCR.`
+          )
+        }
+      } catch (error) {
+        clearTimeout(timeoutId)
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw new Error('File download timed out for Mistral OCR processing')
+        }
+        throw error
       }
-    } catch (error) {
-      clearTimeout(timeoutId)
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('File download timed out for Mistral OCR processing')
-      }
-      throw error
     }
   }
 
@@ -323,6 +338,7 @@ async function parseWithMistralOCR(
     return await parseWithFileParser(fileUrl, filename, mimeType)
   }
 }
+
 
 /**
  * Parse document using standard file parser
