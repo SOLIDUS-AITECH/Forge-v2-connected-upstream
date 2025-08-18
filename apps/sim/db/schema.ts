@@ -16,6 +16,7 @@ import {
   uuid,
   vector,
 } from 'drizzle-orm/pg-core'
+import { DEFAULT_FREE_CREDITS } from '@/lib/billing/constants'
 import { TAG_SLOTS } from '@/lib/constants/knowledge'
 
 // Custom tsvector type for full-text search
@@ -120,8 +121,6 @@ export const workflow = pgTable(
     folderId: text('folder_id').references(() => workflowFolder.id, { onDelete: 'set null' }),
     name: text('name').notNull(),
     description: text('description'),
-    // DEPRECATED: Use normalized tables (workflow_blocks, workflow_edges, workflow_subflows) instead
-    state: json('state').notNull(),
     color: text('color').notNull().default('#3972F6'),
     lastSynced: timestamp('last_synced').notNull(),
     createdAt: timestamp('created_at').notNull(),
@@ -129,6 +128,7 @@ export const workflow = pgTable(
     isDeployed: boolean('is_deployed').notNull().default(false),
     deployedState: json('deployed_state'),
     deployedAt: timestamp('deployed_at'),
+    pinnedApiKey: text('pinned_api_key'),
     collaborators: json('collaborators').notNull().default('[]'),
     runCount: integer('run_count').notNull().default(0),
     lastRunAt: timestamp('last_run_at'),
@@ -161,6 +161,7 @@ export const workflowBlocks = pgTable(
     horizontalHandles: boolean('horizontal_handles').notNull().default(true),
     isWide: boolean('is_wide').notNull().default(false),
     advancedMode: boolean('advanced_mode').notNull().default(false),
+    triggerMode: boolean('trigger_mode').notNull().default(false),
     height: decimal('height').notNull().default('0'),
 
     subBlocks: jsonb('sub_blocks').notNull().default('{}'),
@@ -281,24 +282,15 @@ export const workflowExecutionLogs = pgTable(
       .references(() => workflowExecutionSnapshots.id),
 
     level: text('level').notNull(), // 'info', 'error'
-    message: text('message').notNull(),
     trigger: text('trigger').notNull(), // 'api', 'webhook', 'schedule', 'manual', 'chat'
 
     startedAt: timestamp('started_at').notNull(),
     endedAt: timestamp('ended_at'),
     totalDurationMs: integer('total_duration_ms'),
 
-    blockCount: integer('block_count').notNull().default(0),
-    successCount: integer('success_count').notNull().default(0),
-    errorCount: integer('error_count').notNull().default(0),
-    skippedCount: integer('skipped_count').notNull().default(0),
-
-    totalCost: decimal('total_cost', { precision: 10, scale: 6 }),
-    totalInputCost: decimal('total_input_cost', { precision: 10, scale: 6 }),
-    totalOutputCost: decimal('total_output_cost', { precision: 10, scale: 6 }),
-    totalTokens: integer('total_tokens'),
-
-    metadata: jsonb('metadata').notNull().default('{}'),
+    executionData: jsonb('execution_data').notNull().default('{}'),
+    cost: jsonb('cost'),
+    files: jsonb('files'), // File metadata for execution files
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => ({
@@ -344,7 +336,6 @@ export const settings = pgTable('settings', {
 
   // Privacy settings
   telemetryEnabled: boolean('telemetry_enabled').notNull().default(true),
-  telemetryNotifiedUser: boolean('telemetry_notified_user').notNull().default(false),
 
   // Email preferences
   emailPreferences: json('email_preferences').notNull().default('{}'),
@@ -451,7 +442,9 @@ export const userStats = pgTable('user_stats', {
   totalChatExecutions: integer('total_chat_executions').notNull().default(0),
   totalTokensUsed: integer('total_tokens_used').notNull().default(0),
   totalCost: decimal('total_cost').notNull().default('0'),
-  currentUsageLimit: decimal('current_usage_limit').notNull().default('5'), // Default $5 for free plan
+  currentUsageLimit: decimal('current_usage_limit')
+    .notNull()
+    .default(DEFAULT_FREE_CREDITS.toString()), // Default $10 for free plan
   usageLimitSetBy: text('usage_limit_set_by'), // User ID who set the limit (for team admin tracking)
   usageLimitUpdatedAt: timestamp('usage_limit_updated_at').defaultNow(),
   // Billing period tracking
@@ -459,6 +452,10 @@ export const userStats = pgTable('user_stats', {
   billingPeriodStart: timestamp('billing_period_start').defaultNow(), // When current billing period started
   billingPeriodEnd: timestamp('billing_period_end'), // When current billing period ends
   lastPeriodCost: decimal('last_period_cost').default('0'), // Usage from previous billing period
+  // Copilot usage tracking
+  totalCopilotCost: decimal('total_copilot_cost').notNull().default('0'),
+  totalCopilotTokens: integer('total_copilot_tokens').notNull().default(0),
+  totalCopilotCalls: integer('total_copilot_calls').notNull().default(0),
   lastActive: timestamp('last_active').notNull().defaultNow(),
 })
 
@@ -714,7 +711,7 @@ export const knowledgeBase = pgTable(
     // Chunking configuration stored as JSON for flexibility
     chunkingConfig: json('chunking_config')
       .notNull()
-      .default('{"maxSize": 1024, "minSize": 100, "overlap": 200}'),
+      .default('{"maxSize": 1024, "minSize": 1, "overlap": 200}'),
 
     // Soft delete support
     deletedAt: timestamp('deleted_at'),
@@ -818,6 +815,11 @@ export const knowledgeBaseTagDefinitions = pgTable(
     kbTagSlotIdx: uniqueIndex('kb_tag_definitions_kb_slot_idx').on(
       table.knowledgeBaseId,
       table.tagSlot
+    ),
+    // Ensure unique display name per knowledge base
+    kbDisplayNameIdx: uniqueIndex('kb_tag_definitions_kb_display_name_idx').on(
+      table.knowledgeBaseId,
+      table.displayName
     ),
     // Index for querying by knowledge base
     kbIdIdx: index('kb_tag_definitions_kb_id_idx').on(table.knowledgeBaseId),
@@ -995,6 +997,8 @@ export const copilotChats = pgTable(
     title: text('title'),
     messages: jsonb('messages').notNull().default('[]'),
     model: text('model').notNull().default('claude-3-7-sonnet-latest'),
+    conversationId: text('conversation_id'),
+    previewYaml: text('preview_yaml'), // YAML content for pending workflow preview
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
@@ -1010,8 +1014,8 @@ export const copilotChats = pgTable(
   })
 )
 
-export const copilotCheckpoints = pgTable(
-  'copilot_checkpoints',
+export const workflowCheckpoints = pgTable(
+  'workflow_checkpoints',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     userId: text('user_id')
@@ -1023,34 +1027,39 @@ export const copilotCheckpoints = pgTable(
     chatId: uuid('chat_id')
       .notNull()
       .references(() => copilotChats.id, { onDelete: 'cascade' }),
-    yaml: text('yaml').notNull(),
+    messageId: text('message_id'), // ID of the user message that triggered this checkpoint
+    workflowState: json('workflow_state').notNull(), // JSON workflow state
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => ({
     // Primary access patterns
-    userIdIdx: index('copilot_checkpoints_user_id_idx').on(table.userId),
-    workflowIdIdx: index('copilot_checkpoints_workflow_id_idx').on(table.workflowId),
-    chatIdIdx: index('copilot_checkpoints_chat_id_idx').on(table.chatId),
+    userIdIdx: index('workflow_checkpoints_user_id_idx').on(table.userId),
+    workflowIdIdx: index('workflow_checkpoints_workflow_id_idx').on(table.workflowId),
+    chatIdIdx: index('workflow_checkpoints_chat_id_idx').on(table.chatId),
+    messageIdIdx: index('workflow_checkpoints_message_id_idx').on(table.messageId),
 
     // Combined indexes for common queries
-    userWorkflowIdx: index('copilot_checkpoints_user_workflow_idx').on(
+    userWorkflowIdx: index('workflow_checkpoints_user_workflow_idx').on(
       table.userId,
       table.workflowId
     ),
-    workflowChatIdx: index('copilot_checkpoints_workflow_chat_idx').on(
+    workflowChatIdx: index('workflow_checkpoints_workflow_chat_idx').on(
       table.workflowId,
       table.chatId
     ),
 
     // Ordering indexes
-    createdAtIdx: index('copilot_checkpoints_created_at_idx').on(table.createdAt),
-    chatCreatedAtIdx: index('copilot_checkpoints_chat_created_at_idx').on(
+    createdAtIdx: index('workflow_checkpoints_created_at_idx').on(table.createdAt),
+    chatCreatedAtIdx: index('workflow_checkpoints_chat_created_at_idx').on(
       table.chatId,
       table.createdAt
     ),
   })
 )
+
+// Alias for backward compatibility with existing code
+export const copilotCheckpoints = workflowCheckpoints
 
 export const templates = pgTable(
   'templates',
@@ -1128,6 +1137,60 @@ export const templateStars = pgTable(
     uniqueUserTemplateConstraint: uniqueIndex('template_stars_user_template_unique').on(
       table.userId,
       table.templateId
+    ),
+  })
+)
+
+export const copilotFeedback = pgTable(
+  'copilot_feedback',
+  {
+    feedbackId: uuid('feedback_id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    chatId: uuid('chat_id')
+      .notNull()
+      .references(() => copilotChats.id, { onDelete: 'cascade' }),
+    userQuery: text('user_query').notNull(),
+    agentResponse: text('agent_response').notNull(),
+    isPositive: boolean('is_positive').notNull(),
+    feedback: text('feedback'), // Optional feedback text
+    workflowYaml: text('workflow_yaml'), // Optional workflow YAML if edit/build workflow was triggered
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    // Access patterns
+    userIdIdx: index('copilot_feedback_user_id_idx').on(table.userId),
+    chatIdIdx: index('copilot_feedback_chat_id_idx').on(table.chatId),
+    userChatIdx: index('copilot_feedback_user_chat_idx').on(table.userId, table.chatId),
+
+    // Query patterns
+    isPositiveIdx: index('copilot_feedback_is_positive_idx').on(table.isPositive),
+
+    // Ordering indexes
+    createdAtIdx: index('copilot_feedback_created_at_idx').on(table.createdAt),
+  })
+)
+
+export const copilotApiKeys = pgTable(
+  'copilot_api_keys',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    apiKeyEncrypted: text('api_key_encrypted').notNull(),
+    apiKeyLookup: text('api_key_lookup').notNull(),
+  },
+  (table) => ({
+    apiKeyEncryptedHashIdx: index('copilot_api_keys_api_key_encrypted_hash_idx').using(
+      'hash',
+      table.apiKeyEncrypted
+    ),
+    apiKeyLookupHashIdx: index('copilot_api_keys_lookup_hash_idx').using(
+      'hash',
+      table.apiKeyLookup
     ),
   })
 )

@@ -449,6 +449,90 @@
       "when": 1754088313157,
       "tag": "0064_elite_hedge_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1754171385971,
+      "tag": "0065_solid_newton_destine",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1754352106989,
+      "tag": "0066_talented_mentor",
+      "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1754424644234,
+      "tag": "0067_safe_bushwacker",
+      "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1754446277077,
+      "tag": "0068_fine_hardball",
+      "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1754603754177,
+      "tag": "0069_lonely_spirit",
+      "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1754682155062,
+      "tag": "0070_charming_wrecking_crew",
+      "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1754719531015,
+      "tag": "0071_free_sharon_carter",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1755281098957,
+      "tag": "0072_powerful_legion",
+      "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1755286337930,
+      "tag": "0073_hot_champions",
+      "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1755304368539,
+      "tag": "0074_abnormal_dreadnoughts",
+      "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1755319635487,
+      "tag": "0075_lush_moonstone",
+      "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1755375658161,
+      "tag": "0076_damp_vector",
+      "breakpoints": true
     }
   ]
 }

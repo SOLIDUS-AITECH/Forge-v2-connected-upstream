@@ -16,6 +16,7 @@ import { SidebarChat } from '../../../components/sidebar-chat/sidebar-chat'
 import { SplitChat } from '../../../components/split-chat/split-chat'
 import { useChatType } from '../../../components/chat-utils'
 
+
 export function Panel() {
   const [chatMessage, setChatMessage] = useState<string>('')
   const [copilotMessage, setCopilotMessage] = useState<string>('')

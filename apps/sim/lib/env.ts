@@ -22,6 +22,8 @@ export const env = createEnv({
     DISABLE_REGISTRATION:                 z.boolean().optional(),               // Flag to disable new user registration
     ENCRYPTION_KEY:                       z.string().min(32),                   // Key for encrypting sensitive data
     INTERNAL_API_SECRET:                  z.string().min(32),                   // Secret for internal API authentication
+    COPILOT_API_KEY:                      z.string().min(1).optional(),           // Secret for internal sim agent API authentication
+    AGENT_API_DB_ENCRYPTION_KEY:          z.string().min(32).optional(),        // Key for encrypting copilot API keys in database
 
     // Database & Storage
     POSTGRES_URL:                         z.string().url().optional(),          // Alternative PostgreSQL connection string
@@ -73,6 +75,7 @@ export const env = createEnv({
     BROWSERBASE_API_KEY:                  z.string().min(1).optional(),         // Browserbase API key for browser automation
     BROWSERBASE_PROJECT_ID:               z.string().min(1).optional(),         // Browserbase project ID
     GITHUB_TOKEN:                         z.string().optional(),                // GitHub personal access token for API access
+    SIM_AGENT_API_URL:                    z.string().url().optional(),          // Sim Agent API endpoint URL
 
     // Infrastructure & Deployment
     NEXT_RUNTIME:                         z.string().optional(),                // Next.js runtime environment
@@ -92,6 +95,7 @@ export const env = createEnv({
     S3_LOGS_BUCKET_NAME:                  z.string().optional(),                // S3 bucket for storing logs
     S3_KB_BUCKET_NAME:                    z.string().optional(),                // S3 bucket for knowledge base files
     S3_CHAT_BUCKET_NAME:                  z.string().optional(),                // S3 bucket for chat logos
+    S3_COPILOT_BUCKET_NAME:               z.string().optional(),                  // S3 bucket for copilot files
 
     // Cloud Storage - Azure Blob
     AZURE_ACCOUNT_NAME:                   z.string().optional(),                // Azure storage account name
@@ -100,6 +104,7 @@ export const env = createEnv({
     AZURE_STORAGE_CONTAINER_NAME:         z.string().optional(),                // Azure container for general files
     AZURE_STORAGE_KB_CONTAINER_NAME:      z.string().optional(),                // Azure container for knowledge base files
     AZURE_STORAGE_CHAT_CONTAINER_NAME:    z.string().optional(),                // Azure container for chat logos
+    AZURE_STORAGE_COPILOT_CONTAINER_NAME: z.string().optional(),                  // Azure container for copilot files
 
     // Data Retention
     FREE_PLAN_LOG_RETENTION_DAYS:         z.string().optional(),                // Log retention days for free plan users

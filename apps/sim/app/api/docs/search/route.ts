@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { searchDocumentation } from '@/lib/copilot/service'
+// import { searchDocumentation } from '@/lib/copilot/service' // Function no longer exists
 import { createLogger } from '@/lib/logs/console/logger'
 
 const logger = createLogger('DocsSearchAPI')
@@ -48,9 +48,14 @@ export async function POST(
 
     logger.info('Executing documentation search', { query, topK })
 
-    const startTime = Date.now()
-    const results = await searchDocumentation(query, { topK })
-    const searchTime = Date.now() - startTime
+    // TODO: Implement documentation search functionality
+    // const startTime = Date.now()
+    // const results = await searchDocumentation(query, { topK })
+    // const searchTime = Date.now() - startTime
+
+    // For now, return empty results until search is implemented
+    const results: DocsSearchResult[] = []
+    const searchTime = 0
 
     logger.info(`Found ${results.length} documentation results`, { query })
 
