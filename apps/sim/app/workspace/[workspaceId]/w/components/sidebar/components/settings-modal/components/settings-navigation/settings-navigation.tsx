@@ -9,12 +9,9 @@ import {
   UserCircle,
   Users,
 } from 'lucide-react'
-import { getEnv, isTruthy } from '@/lib/env'
 import { isHosted } from '@/lib/environment'
 import { cn } from '@/lib/utils'
 import { useSubscriptionStore } from '@/stores/subscription/store'
-
-const isBillingEnabled = isTruthy(getEnv('NEXT_PUBLIC_BILLING_ENABLED'))
 
 interface SettingsNavigationProps {
   activeSection: string
@@ -46,7 +43,7 @@ type NavigationItem = {
     | 'privacy'
   label: string
   icon: React.ComponentType<{ className?: string }>
-  hideWhenBillingDisabled?: boolean
+  hideInDev?: boolean
   requiresTeam?: boolean
 }
 
@@ -90,13 +87,13 @@ const allNavigationItems: NavigationItem[] = [
     id: 'subscription',
     label: 'Subscription',
     icon: CreditCard,
-    hideWhenBillingDisabled: true,
+    hideInDev: true,
   },
   {
     id: 'team',
     label: 'Team',
     icon: Users,
-    hideWhenBillingDisabled: true,
+    hideInDev: true,
     requiresTeam: true,
   },
 ]
@@ -111,9 +108,6 @@ export function SettingsNavigation({
 
   const navigationItems = allNavigationItems.filter((item) => {
     if (item.id === 'copilot' && !isHosted) {
-      return false
-    }
-    if (item.hideWhenBillingDisabled && !isBillingEnabled) {
       return false
     }
 

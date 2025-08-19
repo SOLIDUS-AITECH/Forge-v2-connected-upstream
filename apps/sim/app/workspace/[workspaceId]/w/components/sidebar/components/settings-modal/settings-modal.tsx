@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui'
-import { getEnv, isTruthy } from '@/lib/env'
+import { client } from '@/lib/auth-client'
 import { isHosted } from '@/lib/environment'
 import { createLogger } from '@/lib/logs/console/logger'
 import { cn } from '@/lib/utils'
@@ -23,8 +23,6 @@ import { useOrganizationStore } from '@/stores/organization'
 import { useGeneralStore } from '@/stores/settings/general/store'
 
 const logger = createLogger('SettingsModal')
-
-const isBillingEnabled = isTruthy(getEnv('NEXT_PUBLIC_BILLING_ENABLED'))
 
 interface SettingsModalProps {
   open: boolean
@@ -87,14 +85,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     }
   }, [onOpenChange])
 
-  // Redirect away from billing tabs if billing is disabled
-  useEffect(() => {
-    if (!isBillingEnabled && (activeSection === 'subscription' || activeSection === 'team')) {
-      setActiveSection('general')
-    }
-  }, [activeSection])
-
-  const isSubscriptionEnabled = isBillingEnabled
+  const isSubscriptionEnabled = !!client.subscription
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -144,11 +135,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
             {isSubscriptionEnabled && (
               <div className={cn('h-full', activeSection === 'subscription' ? 'block' : 'hidden')}>
                 <Subscription onOpenChange={onOpenChange} />
-              </div>
-            )}
-            {isBillingEnabled && (
-              <div className={cn('h-full', activeSection === 'team' ? 'block' : 'hidden')}>
-                <TeamManagement />
               </div>
             )}
             {isHosted && (
