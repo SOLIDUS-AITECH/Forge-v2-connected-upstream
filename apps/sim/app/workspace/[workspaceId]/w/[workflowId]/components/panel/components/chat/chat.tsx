@@ -481,7 +481,7 @@ export function Chat({ panelWidth, chatMessage, setChatMessage, hideHeader = fal
               onClick={handleSendMessage}
               size='icon'
               disabled={!chatMessage.trim() || !activeWorkflowId || isExecuting}
-              className='h-9 w-9 rounded-lg bg-[#0e5628] text-white shadow-[0_0_0_0_#0e5628] transition-all duration-200 hover:bg-[#7028E6] hover:shadow-[0_0_0_4px_rgba(127,47,255,0.15)]'
+              className='h-9 w-9 rounded-lg bg-[#0e5628] text-white shadow-[0_0_0_0_#0e5628] transition-all duration-200 hover:bg-[#107f39] hover:shadow-[0_0_0_4px_rgba(16,127,57,0.15)]'
             >
               <ArrowUp className='h-4 w-4' />
             </Button>
