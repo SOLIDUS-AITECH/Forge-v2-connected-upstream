@@ -1,13 +1,14 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
-import { ArrowUp, Play, MessageCircle, HelpCircle, ArrowLeft, Bot, FileText, ArrowDownToLine, CircleSlash, X } from 'lucide-react'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
+import { ArrowUp, ArrowDownToLine, CircleSlash, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useParams } from 'next/navigation'
 import { useSession } from '@/lib/auth-client'
 import { useWorkflowYamlStore } from '@/stores/workflows/yaml/store'
+import { useChatStore } from '@/stores/panel/chat/store'
 import { Chat } from '../../[workflowId]/components/panel/components/chat/chat'
 
 interface Message {
@@ -16,68 +17,36 @@ interface Message {
   role: 'user' | 'assistant'
 }
 
-type ChatMode = 'menu' | 'workflow' | 'agent' | 'rep' | 'faqs'
+type BottomTab = 'agent' | 'rep'
 
-// Maximum character length for a word before it's broken up
-const MAX_WORD_LENGTH = 25
-
-const WordWrap = ({ text }: { text: string }) => {
-  if (!text) return null
-
-  // Split text into words, keeping spaces and punctuation
-  const parts = text.split(/(\s+)/g)
-
-  return (
-    <>
-      {parts.map((part, index) => {
-        // If the part is whitespace or shorter than the max length, render it as is
-        if (part.match(/\s+/) || part.length <= MAX_WORD_LENGTH) {
-          return <span key={index}>{part}</span>
-        }
-
-        // For long words, break them up into chunks
-        const chunks = []
-        for (let i = 0; i < part.length; i += MAX_WORD_LENGTH) {
-          chunks.push(part.substring(i, i + MAX_WORD_LENGTH))
-        }
-
-        return (
-          <span key={index} className='break-all'>
-            {chunks.map((chunk, chunkIndex) => (
-              <span key={chunkIndex}>{chunk}</span>
-            ))}
-          </span>
-        )
-      })}
-    </>
-  )
-}
-
-interface SidebarChatProps {
+interface SplitChatProps {
+  panelWidth: number
   onClose?: () => void
 }
 
-export function SidebarChat({ onClose }: SidebarChatProps = {}) {
-  const [messages, setMessages] = useState<Message[]>([])
+const SplitChatComponent = function({ panelWidth, onClose }: SplitChatProps) {
+  const [agentMessages, setAgentMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [historyLoaded, setHistoryLoaded] = useState(false)
-  const [activeMode, setActiveMode] = useState<ChatMode>('menu')
+  const [activeBottomTab, setActiveBottomTab] = useState<BottomTab>('agent')
   const [workflowChatMessage, setWorkflowChatMessage] = useState('')
+  const [topHeight, setTopHeight] = useState(60) // 60% for top, 40% for bottom
+  const [isResizing, setIsResizing] = useState(false)
+  const [resizeStartY, setResizeStartY] = useState(0)
+  const [resizeStartHeight, setResizeStartHeight] = useState(0)
+  
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const params = useParams()
   const { data: session } = useSession()
   const workflowId = params?.workflowId as string | undefined
   const username = session?.user?.name || 'anonymous'
+  const { clearChat } = useChatStore()
 
-  // Fetch conversation history when switching to agent mode
+  // Fetch conversation history when switching to agent tab
   useEffect(() => {
-    if (activeMode === 'agent') {
+    if (activeBottomTab === 'agent') {
       const fetchHistory = async () => {
-        if (!workflowId || !username) {
-          setHistoryLoaded(true)
-          return
-        }
+        if (!workflowId || !username) return
         try {
           const res = await fetch(`https://forgev2-platform.ai.aitech.io/sessions/${username}/${workflowId}/history`)
           if (res.ok) {
@@ -95,25 +64,23 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
                   role: 'assistant',
                 },
               ])
-              setMessages(historyMsgs)
+              setAgentMessages(historyMsgs)
             }
           }
         } catch (e) {
-          // ignore error, just show no messages
-        } finally {
-          setHistoryLoaded(true)
+          // ignore error
         }
       }
       fetchHistory()
     }
-  }, [activeMode, workflowId, username])
+  }, [activeBottomTab, workflowId, username])
 
   // Scroll to bottom on new message
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [messages])
+  }, [agentMessages])
 
   const handleSend = async () => {
     if (!input.trim() || loading) return
@@ -122,7 +89,7 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
       content: input,
       role: 'user',
     }
-    setMessages((msgs) => [...msgs, userMsg])
+    setAgentMessages((msgs) => [...msgs, userMsg])
     setInput('')
     setLoading(true)
 
@@ -141,7 +108,7 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
         }),
       })
       const data = await res.json()
-      setMessages((msgs) => [
+      setAgentMessages((msgs) => [
         ...msgs,
         {
           id: crypto.randomUUID(),
@@ -150,7 +117,7 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
         },
       ])
     } catch (e: any) {
-      setMessages((msgs) => [
+      setAgentMessages((msgs) => [
         ...msgs,
         {
           id: crypto.randomUUID(),
@@ -170,24 +137,11 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
     }
   }
 
-  const handleModeChange = (mode: ChatMode) => {
-    setActiveMode(mode)
-    if (mode !== 'menu') {
-      setMessages([])
-      setInput('')
-      setHistoryLoaded(false)
+  const handleClearChat = () => {
+    if (workflowId) {
+      clearChat(workflowId)
     }
-  }
-
-  const handleClearAgentChat = async () => {
-    try {
-      await fetch(`https://forgev2-platform.ai.aitech.io/sessions/${username}/${workflowId}`, {
-        method: 'DELETE',
-      })
-      setMessages([])
-    } catch (e) {
-      // ignore error
-    }
+    setWorkflowChatMessage('')
   }
 
   const handleSuggestedPrompt = async (prompt: string) => {
@@ -196,7 +150,7 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
       content: prompt,
       role: 'user',
     }
-    setMessages((msgs) => [...msgs, userMsg])
+    setAgentMessages((msgs) => [...msgs, userMsg])
     setLoading(true)
 
     try {
@@ -214,7 +168,7 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
         }),
       })
       const data = await res.json()
-      setMessages((msgs) => [
+      setAgentMessages((msgs) => [
         ...msgs,
         {
           id: crypto.randomUUID(),
@@ -223,7 +177,7 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
         },
       ])
     } catch (e: any) {
-      setMessages((msgs) => [
+      setAgentMessages((msgs) => [
         ...msgs,
         {
           id: crypto.randomUUID(),
@@ -236,354 +190,304 @@ export function SidebarChat({ onClose }: SidebarChatProps = {}) {
     }
   }
 
-  const handleClosePanel = () => {
-    // Close the entire panel
-    if (onClose) {
-      onClose()
-    }
-  }
+  // Resize functionality
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      setIsResizing(true)
+      setResizeStartY(e.clientY)
+      setResizeStartHeight(topHeight)
+    },
+    [topHeight]
+  )
 
-  const renderHeaderButtons = () => {
-    if (activeMode === 'menu') {
-      // Menu: Only close button
-      return (
-        <button
-          onClick={handleClosePanel}
-          className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
-          style={{ color: 'var(--base-muted-foreground)' }}
-        >
-          <X className='h-4 w-4' strokeWidth={2} />
-        </button>
-      )
-    } else if (activeMode === 'workflow') {
-      // Workflow: All three buttons (download, clear, close)
-      return (
-        <div className='flex items-center gap-2'>
-          <button 
-            className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
-            style={{ color: 'var(--base-muted-foreground)' }}
-          >
-            <ArrowDownToLine className='h-4 w-4' strokeWidth={2} />
-          </button>
-          <button 
-            className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
-            style={{ color: 'var(--base-muted-foreground)' }}
-          >
-            <CircleSlash className='h-4 w-4' strokeWidth={2} />
-          </button>
-          <button
-            onClick={handleClosePanel}
-            className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
-            style={{ color: 'var(--base-muted-foreground)' }}
-          >
-            <X className='h-4 w-4' strokeWidth={2} />
-          </button>
-        </div>
-      )
-    } else if (activeMode === 'agent') {
-      // Agent: Only clear and close buttons
-      return (
-        <div className='flex items-center gap-2'>
-          <button 
-            onClick={handleClearAgentChat}
-            className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
-            style={{ color: 'var(--base-muted-foreground)' }}
-          >
-            <CircleSlash className='h-4 w-4' strokeWidth={2} />
-          </button>
-          <button
-            onClick={handleClosePanel}
-            className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
-            style={{ color: 'var(--base-muted-foreground)' }}
-          >
-            <X className='h-4 w-4' strokeWidth={2} />
-          </button>
-        </div>
-      )
-    } else {
-      // Rep/FAQs: Only close button
-      return (
-        <button
-          onClick={handleClosePanel}
-          className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
-          style={{ color: 'var(--base-muted-foreground)' }}
-        >
-          <X className='h-4 w-4' strokeWidth={2} />
-        </button>
-      )
-    }
-  }
+  const handleResize = useCallback(
+    (e: MouseEvent) => {
+      if (!isResizing) return
+      const deltaY = e.clientY - resizeStartY
+      const containerHeight = window.innerHeight - 200 // Approximate available height
+      const deltaPercentage = (deltaY / containerHeight) * 100
+      const newHeight = Math.max(30, Math.min(80, resizeStartHeight + deltaPercentage))
+      setTopHeight(newHeight)
+    },
+    [isResizing, resizeStartY, resizeStartHeight]
+  )
 
-  const renderMenu = () => (
-    <div className='flex flex-col gap-3 p-3'>
-      <button
-        onClick={() => handleModeChange('workflow')}
-        className='group flex flex-col items-center gap-3 rounded-lg border border-gray-700 bg-black p-4 text-center transition-all duration-200 hover:border-[#107f39]'
-      >
-        <Play className='h-10 w-10 text-[#6f6f6f] transition-colors duration-200 group-hover:text-[#107f39]' />
-        <div>
-          <div className='text-base font-medium text-white'>Run workflow</div>
-          <div className='text-xs text-[#6f6f6f] mt-1'>Execute your workflow and get responses</div>
-        </div>
-      </button>
+  const handleResizeEnd = useCallback(() => {
+    setIsResizing(false)
+  }, [])
+
+  // Add global mouse event listeners for resize
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleResize)
+      document.addEventListener('mouseup', handleResizeEnd)
+      document.body.style.cursor = 'row-resize'
+      document.body.style.userSelect = 'none'
+
+      return () => {
+        document.removeEventListener('mousemove', handleResize)
+        document.removeEventListener('mouseup', handleResizeEnd)
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+      }
+    }
+  }, [isResizing, handleResize, handleResizeEnd])
+
+  const renderAgentChat = () => (
+    <div className='flex h-full flex-col'>
+      <div className='flex-1 overflow-hidden'>
+        {agentMessages.length === 0 ? (
+          <div className='flex h-full items-center justify-center text-muted-foreground text-sm'>
+            No messages yet
+          </div>
+        ) : (
+          <ScrollArea className='h-full pb-2' hideScrollbar={true}>
+            <div className='flex flex-col gap-2 p-3'>
+              {agentMessages.map((msg) => (
+                <div key={msg.id} className='w-full py-2'>
+                  {msg.role === 'user' ? (
+                    <div className='flex justify-end'>
+                      <div className='max-w-[80%]'>
+                        <div className='rounded-[10px] bg-[#0e5628] px-3 py-2'>
+                          <div className='whitespace-pre-wrap break-words font-normal text-white text-sm leading-normal'>
+                            {msg.content}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className='pl-[2px]'>
+                      <div className='overflow-wrap-anywhere relative whitespace-normal break-normal font-normal text-sm leading-normal'>
+                        <div className='whitespace-pre-wrap break-words text-white'>
+                          {msg.content}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {loading && (
+                <div className='w-full py-2 pl-[2px]'>
+                  <div className='overflow-wrap-anywhere relative whitespace-normal break-normal font-normal text-sm leading-normal'>
+                    <div className='whitespace-pre-wrap break-words text-white opacity-70'>
+                      ...
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </ScrollArea>
+        )}
+      </div>
       
-      <button
-        onClick={() => handleModeChange('agent')}
-        className='group flex flex-col items-center gap-3 rounded-lg border border-gray-700 bg-black p-4 text-center transition-all duration-200 hover:border-[#107f39]'
-      >
-        <Bot className='h-10 w-10 text-[#6f6f6f] transition-colors duration-200 group-hover:text-[#107f39]' />
-        <div>
-          <div className='text-base font-medium text-white'>Talk to agent</div>
-          <div className='text-xs text-[#6f6f6f] mt-1'>Get help from our AI assistant</div>
+      {/* Suggested Prompts */}
+      <div className='flex-none px-3 pb-2'>
+        <div className='overflow-x-auto scrollbar-hide'>
+          <div className='flex flex-col gap-2' style={{ width: 'max-content' }}>
+            {/* Row 1 */}
+            <div className='flex gap-2'>
+              <button
+                onClick={() => handleSuggestedPrompt('How do I create a workflow?')}
+                disabled={loading}
+                className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+              >
+                How do I create a workflow?
+              </button>
+              <button
+                onClick={() => handleSuggestedPrompt('What tools are available?')}
+                disabled={loading}
+                className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+              >
+                What tools are available?
+              </button>
+              <button
+                onClick={() => handleSuggestedPrompt('What does my workflow do?')}
+                disabled={loading}
+                className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+              >
+                What does my workflow do?
+              </button>
+              <button
+                onClick={() => handleSuggestedPrompt('How do I integrate APIs?')}
+                disabled={loading}
+                className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+              >
+                How do I integrate APIs?
+              </button>
+              <button
+                onClick={() => handleSuggestedPrompt('Can you help me debug?')}
+                disabled={loading}
+                className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+              >
+                Can you help me debug?
+              </button>
+            </div>
+            {/* Row 2 */}
+            <div className='flex gap-2'>
+              <button
+                onClick={() => handleSuggestedPrompt('Show me examples')}
+                disabled={loading}
+                className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+              >
+                Show me examples
+              </button>
+              <button
+                onClick={() => handleSuggestedPrompt('How do I deploy?')}
+                disabled={loading}
+                className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+              >
+                How do I deploy?
+              </button>
+              <button
+                onClick={() => handleSuggestedPrompt('What are best practices?')}
+                disabled={loading}
+                className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+              >
+                What are best practices?
+              </button>
+              <button
+                onClick={() => handleSuggestedPrompt('Explain this error')}
+                disabled={loading}
+                className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+              >
+                Explain this error
+              </button>
+              <button
+                onClick={() => handleSuggestedPrompt('Optimize my workflow')}
+                disabled={loading}
+                className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
+              >
+                Optimize my workflow
+              </button>
+            </div>
+          </div>
         </div>
-      </button>
+      </div>
       
-      <button
-        onClick={() => window.open('https://calendar.google.com', '_blank')}
-        className='group flex flex-col items-center gap-3 rounded-lg border border-gray-700 bg-black p-4 text-center transition-all duration-200 hover:border-[#107f39]'
-      >
-        <MessageCircle className='h-10 w-10 text-[#6f6f6f] transition-colors duration-200 group-hover:text-[#107f39]' />
-        <div>
-          <div className='text-base font-medium text-white'>Talk to Rep</div>
-          <div className='text-xs text-[#6f6f6f] mt-1'>Connect with our support team</div>
+      <div className='relative flex-none pt-3 pb-4 px-3'>
+        <div className='flex gap-2'>
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder='Type a message...'
+            className='h-9 flex-1 rounded-lg border-[#E5E5E5] bg-[#222] text-white shadow-xs focus-visible:ring-0 focus-visible:ring-offset-0 dark:border-[#414141] dark:bg-[#202020]'
+            disabled={loading}
+          />
+          <Button
+            onClick={handleSend}
+            size='icon'
+            disabled={!input.trim() || loading}
+            className='h-9 w-9 rounded-lg bg-[#0e5628] text-white shadow-[0_0_0_0_#0e5628] transition-all duration-200 hover:bg-[#107f39] hover:shadow-[0_0_0_4px_rgba(16,127,57,0.15)]'
+          >
+            <ArrowUp className='h-4 w-4' />
+          </Button>
         </div>
-      </button>
-      
-      <button
-        onClick={() => handleModeChange('faqs')}
-        className='group flex flex-col items-center gap-3 rounded-lg border border-gray-700 bg-black p-4 text-center transition-all duration-200 hover:border-[#107f39]'
-      >
-        <HelpCircle className='h-10 w-10 text-[#6f6f6f] transition-colors duration-200 group-hover:text-[#107f39]' />
-        <div>
-          <div className='text-base font-medium text-white'>FAQs</div>
-          <div className='text-xs text-[#6f6f6f] mt-1'>Find answers to common questions</div>
-        </div>
-      </button>
+      </div>
     </div>
   )
 
-  const renderChatContent = () => {
-    if (activeMode === 'workflow') {
-      return (
-        <div className='h-full'>
+  return (
+    <div className='h-full flex flex-col gap-1'>
+      {/* Top Container - Workflow Chat */}
+      <div 
+        className='flex flex-col rounded-[14px] border bg-card shadow-xs overflow-hidden'
+        style={{ height: `${topHeight}%` }}
+      >
+        {/* Header */}
+        <div className='flex items-center justify-between px-3 pt-3 pb-1 flex-none'>
+          <h2 className='font-[450] text-base text-card-foreground'>Chat</h2>
+          <div className='flex items-center gap-2'>
+            <button 
+              className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
+              style={{ color: 'var(--base-muted-foreground)' }}
+            >
+              <ArrowDownToLine className='h-4 w-4' strokeWidth={2} />
+            </button>
+            <button 
+              onClick={handleClearChat}
+              className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
+              style={{ color: 'var(--base-muted-foreground)' }}
+              title="Clear chat"
+            >
+              <CircleSlash className='h-4 w-4' strokeWidth={2} />
+            </button>
+            <button 
+              onClick={onClose}
+              className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
+              style={{ color: 'var(--base-muted-foreground)' }}
+            >
+              <X className='h-4 w-4' strokeWidth={2} />
+            </button>
+          </div>
+        </div>
+        
+        {/* Chat Content */}
+        <div className='flex-1 overflow-hidden px-3'>
           <Chat 
-            panelWidth={400} 
+            panelWidth={panelWidth} 
             chatMessage={workflowChatMessage}
             setChatMessage={setWorkflowChatMessage}
           />
         </div>
-      )
-    }
+      </div>
 
-    if (activeMode === 'faqs') {
-      return (
-        <div className='flex h-full items-center justify-center text-muted-foreground text-sm p-3'>
-          FAQs - Coming Soon
+      {/* Resizable Divider */}
+      <div
+        className='h-2 flex items-center justify-center cursor-row-resize relative'
+        onMouseDown={handleResizeStart}
+      >
+        <div className='w-12 h-1 bg-gray-500 rounded-full opacity-60 hover:opacity-100 hover:bg-gradient-to-r hover:from-gray-400 hover:to-gray-600 transition-all duration-200'></div>
+      </div>
+
+      {/* Bottom Container - Agent/Rep Tabs */}
+      <div className='flex flex-col rounded-[14px] border bg-card shadow-xs overflow-hidden flex-1'>
+        {/* Tab Selector */}
+        <div className='flex h-9 items-center gap-1 px-3 py-1 flex-none'>
+          <button
+            onClick={() => setActiveBottomTab('agent')}
+            className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 ${
+              activeBottomTab === 'agent' ? 'panel-tab-active' : 'panel-tab-inactive'
+            }`}
+          >
+            Agent
+          </button>
+          <button
+            onClick={() => window.open('https://calendar.google.com', '_blank')}
+            className={`panel-tab-base inline-flex flex-1 cursor-pointer items-center justify-center rounded-[10px] border-transparent py-1 font-[450] text-sm outline-none transition-colors duration-200 panel-tab-inactive hover:text-white`}
+          >
+            Rep
+          </button>
         </div>
-      )
-    }
-
-    if (activeMode === 'rep') {
-      return (
-        <div className='flex h-full items-center justify-center text-muted-foreground text-sm p-3'>
-          Talk to Rep - Coming Soon
-        </div>
-      )
-    }
-
-    return (
-      <div className='flex h-full flex-col'>
+        
+        {/* Tab Content */}
         <div className='flex-1 overflow-hidden'>
-          {historyLoaded && messages.length === 0 ? (
-            <div className='flex h-full items-center justify-center text-muted-foreground text-sm'>
-              No messages yet
-            </div>
-          ) : (
-            <ScrollArea className='h-full pb-2' hideScrollbar={true}>
-              <div className='flex flex-col gap-2 p-3'>
-                {messages.map((msg) => (
-                  <div key={msg.id} className='w-full py-2'>
-                    {msg.role === 'user' ? (
-                      <div className='flex justify-end'>
-                        <div className='max-w-[80%]'>
-                          <div className='rounded-[10px] bg-[#0e5628] px-3 py-2'>
-                            <div className='whitespace-pre-wrap break-words font-normal text-white text-sm leading-normal'>
-                              <WordWrap text={msg.content} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className='pl-[2px]'>
-                        <div className='overflow-wrap-anywhere relative whitespace-normal break-normal font-normal text-sm leading-normal'>
-                          <div className='whitespace-pre-wrap break-words text-white'>
-                            <WordWrap text={msg.content} />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {loading && (
-                  <div className='w-full py-2 pl-[2px]'>
-                    <div className='overflow-wrap-anywhere relative whitespace-normal break-normal font-normal text-sm leading-normal'>
-                      <div className='whitespace-pre-wrap break-words text-white opacity-70'>
-                        ...
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
+          {activeBottomTab === 'agent' && (
+            <div className='flex h-full flex-col'>
+              {/* Agent Chat Header with Clear Button */}
+              <div className='flex items-center justify-between p-3 border-b border-gray-700 flex-none'>
+                <div className='text-sm font-medium text-white'>Agent Chat</div>
+                <button
+                  onClick={handleClearChat}
+                  className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
+                  style={{ color: 'var(--base-muted-foreground)' }}
+                >
+                  <CircleSlash className='h-4 w-4' strokeWidth={2} />
+                </button>
               </div>
-            </ScrollArea>
+              {/* Agent Chat Content */}
+              <div className='flex-1 overflow-hidden'>
+                {renderAgentChat()}
+              </div>
+            </div>
           )}
         </div>
-        
-        {/* Suggested Prompts */}
-        <div className='flex-none px-3 pb-2'>
-          <div className='overflow-x-auto scrollbar-hide'>
-            <div className='flex flex-col gap-2' style={{ width: 'max-content' }}>
-              {/* Row 1 */}
-              <div className='flex gap-2'>
-                <button
-                  onClick={() => handleSuggestedPrompt('How do I create a workflow?')}
-                  disabled={loading}
-                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
-                >
-                  How do I create a workflow?
-                </button>
-                <button
-                  onClick={() => handleSuggestedPrompt('What tools are available?')}
-                  disabled={loading}
-                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
-                >
-                  What tools are available?
-                </button>
-                <button
-                  onClick={() => handleSuggestedPrompt('What does my workflow do?')}
-                  disabled={loading}
-                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
-                >
-                  What does my workflow do?
-                </button>
-                <button
-                  onClick={() => handleSuggestedPrompt('How do I integrate APIs?')}
-                  disabled={loading}
-                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
-                >
-                  How do I integrate APIs?
-                </button>
-                <button
-                  onClick={() => handleSuggestedPrompt('Can you help me debug?')}
-                  disabled={loading}
-                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
-                >
-                  Can you help me debug?
-                </button>
-              </div>
-              {/* Row 2 */}
-              <div className='flex gap-2'>
-                <button
-                  onClick={() => handleSuggestedPrompt('Show me examples')}
-                  disabled={loading}
-                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
-                >
-                  Show me examples
-                </button>
-                <button
-                  onClick={() => handleSuggestedPrompt('How do I deploy?')}
-                  disabled={loading}
-                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
-                >
-                  How do I deploy?
-                </button>
-                <button
-                  onClick={() => handleSuggestedPrompt('What are best practices?')}
-                  disabled={loading}
-                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
-                >
-                  What are best practices?
-                </button>
-                <button
-                  onClick={() => handleSuggestedPrompt('Explain this error')}
-                  disabled={loading}
-                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
-                >
-                  Explain this error
-                </button>
-                <button
-                  onClick={() => handleSuggestedPrompt('Optimize my workflow')}
-                  disabled={loading}
-                  className='px-3 py-1.5 rounded-full border border-gray-700 bg-black text-white text-xs hover:border-[#107f39] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex-shrink-0'
-                >
-                  Optimize my workflow
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className='relative flex-none pt-3 pb-4 px-3'>
-          <div className='flex gap-2'>
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder='Type a message...'
-              className='h-9 flex-1 rounded-lg border-[#E5E5E5] bg-[#222] text-white shadow-xs focus-visible:ring-0 focus-visible:ring-offset-0 dark:border-[#414141] dark:bg-[#202020]'
-              disabled={loading}
-            />
-            <Button
-              onClick={handleSend}
-              size='icon'
-              disabled={!input.trim() || loading}
-              className='h-9 w-9 rounded-lg bg-[#0e5628] text-white shadow-[0_0_0_0_#0e5628] transition-all duration-200 hover:bg-[#107f39] hover:shadow-[0_0_0_4px_rgba(16,127,57,0.15)]'
-            >
-              <ArrowUp className='h-4 w-4' />
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className='flex h-full flex-col'>
-      {/* Menu mode: Only close button in top-right, no header/border */}
-      {activeMode === 'menu' && (
-        <div className='flex justify-end p-3 pb-0'>
-          {renderHeaderButtons()}
-        </div>
-      )}
-
-      {/* Non-menu modes: Back button and header with border */}
-      {activeMode !== 'menu' && (
-        <div className='border-b border-gray-700'>
-          {/* Back button row */}
-          <div className='flex items-center px-3 pt-3 pb-2'>
-            <button
-              onClick={() => handleModeChange('menu')}
-              className='flex items-center gap-2 text-sm text-[#6f6f6f] hover:text-white transition-colors'
-            >
-              <ArrowLeft className='h-4 w-4' />
-              Back
-            </button>
-          </div>
-          
-          {/* Header row */}
-          <div className='flex items-center justify-between px-3 pb-3'>
-            <h2 className='font-[450] text-base text-card-foreground capitalize'>
-              {activeMode === 'workflow' ? 'Chat' : activeMode === 'agent' ? 'Agent Chat' : activeMode}
-            </h2>
-            {renderHeaderButtons()}
-          </div>
-        </div>
-      )}
-      
-      {/* Content Area */}
-      <div className='flex-1 overflow-hidden'>
-        {activeMode === 'menu' ? renderMenu() : renderChatContent()}
       </div>
     </div>
   )
-} 
+}
+
+// Memoize the component to prevent unnecessary re-renders
+export const SplitChat = React.memo(SplitChatComponent) 

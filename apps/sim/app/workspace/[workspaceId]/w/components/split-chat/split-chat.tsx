@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { useParams } from 'next/navigation'
 import { useSession } from '@/lib/auth-client'
 import { useWorkflowYamlStore } from '@/stores/workflows/yaml/store'
+import { useChatStore } from '@/stores/panel/chat/store'
 import { Chat } from '../../[workflowId]/components/panel/components/chat/chat'
 
 interface Message {
@@ -39,6 +40,7 @@ const SplitChatComponent = function({ panelWidth, onClose }: SplitChatProps) {
   const { data: session } = useSession()
   const workflowId = params?.workflowId as string | undefined
   const username = session?.user?.name || 'anonymous'
+  const { clearChat } = useChatStore()
 
   // Fetch conversation history when switching to agent tab
   useEffect(() => {
@@ -135,15 +137,11 @@ const SplitChatComponent = function({ panelWidth, onClose }: SplitChatProps) {
     }
   }
 
-  const handleClearChat = async () => {
-    try {
-      await fetch(`https://forgev2-platform.ai.aitech.io/sessions/${username}/${workflowId}`, {
-        method: 'DELETE',
-      })
-      setAgentMessages([])
-    } catch (e) {
-      // ignore error
+  const handleClearChat = () => {
+    if (workflowId) {
+      clearChat(workflowId)
     }
+    setWorkflowChatMessage('')
   }
 
   const handleSuggestedPrompt = async (prompt: string) => {
@@ -409,8 +407,10 @@ const SplitChatComponent = function({ panelWidth, onClose }: SplitChatProps) {
               <ArrowDownToLine className='h-4 w-4' strokeWidth={2} />
             </button>
             <button 
+              onClick={handleClearChat}
               className='font-medium text-md leading-normal transition-all hover:brightness-75 dark:hover:brightness-125'
               style={{ color: 'var(--base-muted-foreground)' }}
+              title="Clear chat"
             >
               <CircleSlash className='h-4 w-4' strokeWidth={2} />
             </button>
